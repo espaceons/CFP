@@ -1,0 +1,21 @@
+{# base.html #}
+
+{% load static %} {# Charger les balises static si vous utilisez des fichiers statiques #}
+
+<html>
+    {% include 'includes/_head.html' %}
+
+    <body>
+        {% include 'includes/_header.html' %}
+
+        <main> {# Utilisation d'une balise sémantique pour le contenu principal #}
+            {% block content %}
+                {# Le contenu spécifique de chaque page ira ici #}
+            {% endblock %}
+        </main>
+
+        {% include 'includes/_footer.html' %}
+
+        {% include 'includes/_scripts.html' %}
+    </body>
+</html>

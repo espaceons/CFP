@@ -1,0 +1,43 @@
+{# gestion_formations/templates/gestion_formations/formation_detail.html #}
+
+{% extends 'base.html' %} {# Hérite de base.html #}
+
+{# Utilise le nom de la formation pour le titre de la page #}
+{% block title %}{{ formation.nom }} - Détail{% endblock %}
+
+{% block content %}
+    <h1>{{ formation.nom }}</h1>
+
+    <p>{{ formation.description|linebreaksbr }}</p> {# Affiche la description en conservant les sauts de ligne #}
+    <p>Durée estimée : {{ formation.duree_heures|default:"Non spécifié" }} heures</p>
+    <p>Objectifs : {{ formation.objectifs|linebreaksbr|default:"Non spécifié" }}</p>
+    <p>Prérequis : {{ formation.prerequis|linebreaksbr|default:"Non spécifié" }}</p>
+
+    {# Vous pouvez ajouter d'autres détails de la formation ici #}
+
+    <h2>Sessions disponibles pour cette formation :</h2>
+
+    {% if formation.sessions.all %} {# Accède aux sessions liées grâce au related_name='sessions' sur le ForeignKey Session.formation #}
+        <ul>
+            {% for session in formation.sessions.all %}
+                <li>
+                    <h3>{{ session.nom_session }}</h3>
+                    <p>Période : Du {{ session.date_debut_session|date:"d/m/Y" }} au {{ session.date_fin_session|date:"d/m/Y" }}</p>
+                    <p>Lieu principal : {{ session.lieu|default:"Non spécifié" }}</p>
+                    <p>Capacité max : {{ session.capacite_max }}</p>
+                    <p>Formateur principal : {% if session.instructor_principal %}{{ session.instructor_principal.user.get_full_name }}{% else %}Non assigné{% endif %}</p>
+                    
+                    <p>Inscrits : {{ session.enrollments.count }} / {{ session.capacite_max }}</p> {# Compte le nombre d'inscrits #}
+
+                    {# Plus tard, ajouter un lien vers le détail de la session ou la liste des séances #}
+                    {# <p><a href="{% url 'gestion_formations:session_detail' session.pk %}">Voir les séances</a></p> #}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucune session n'est planifiée pour cette formation pour le moment.</p>
+    {% endif %}
+
+    <p><a href="{% url 'gestion_formations:list' %}">Retour à la liste des formations</a></p>
+
+{% endblock %}

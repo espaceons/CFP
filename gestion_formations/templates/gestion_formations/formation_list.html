@@ -1,0 +1,29 @@
+{% extends 'base.html' %} {# Assumez que vous avez un template de base pour la structure générale #}
+
+{% block title %}{{ titre_page }}{% endblock %} {# Utilise le titre passé depuis la vue #}
+
+{% block content %}
+    <h1>{{ titre_page }}</h1>
+
+    {% if formations %}
+        <ul>
+            {% for formation in formations %}
+                <li>
+                    {# Le lien vers la page de détail #}
+                    <a href="{% url 'gestion_formations:detail' formation.pk %}">
+                        <h2>{{ formation.nom }}</h2>
+                    </a>
+                    
+                    <p>{{ formation.description|truncatechars:200 }}</p> {# Affiche une partie de la description #}
+                    <p>Durée estimée : {{ formation.duree_heures|default:"Non spécifié" }} heures</p>
+                    {# Plus tard, ajouter un lien vers la page de détail de la formation #}
+                    <p><a href="{% url 'gestion_formations:detail' formation.pk %}">Voir détails et sessions</a></p>
+                    
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucune formation active n'est disponible pour le moment.</p>
+    {% endif %}
+
+{% endblock %}

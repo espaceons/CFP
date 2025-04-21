@@ -1,0 +1,24 @@
+<nav>
+    <ul>
+        <li><a href="{% url 'gestion_formations:list' %}">Formations</a></li> {# Exemple de lien utilisant le nom d'URL #}
+        {# Ajoutez d'autres liens de navigation #}
+        {% if user.is_authenticated %}
+            {# Liens pour utilisateurs connectés (profil, déconnexion, etc.) #}
+            <li><a href="{% url 'logout' %}">Déconnexion</a></li> {# Assurez-vous d'avoir une URL de déconnexion configurée #}
+            <li>Bonjour, {{ user.get_full_name|default:user.username }}</li>
+        {% else %}
+            {# Liens pour utilisateurs déconnectés (connexion, inscription) #}
+            <li><a href="{% url 'login' %}">Connexion</a></li> {# Assurez-vous d'avoir une URL de connexion configurée #}
+            {# <li><a href="{% url 'signup' %}">Inscription</a></li> #}
+        {% endif %}
+    </ul>
+</nav>
+{# Ajoutez d'autres éléments de navigation ou des fonctionnalités selon vos besoins #}
+{# Vous pouvez également ajouter un formulaire de recherche ou d'autres éléments interactifs ici #}
+{# Pensez à styliser cette navigation avec CSS pour l'adapter à votre design #}
+{# Vous pouvez également utiliser Bootstrap ou un autre framework CSS pour une navigation plus avancée #}
+{# N'oubliez pas de tester la navigation sur différents appareils pour assurer une bonne expérience utilisateur #}
+{# Si vous utilisez des icônes, pensez à les intégrer ici #}
+{# Vous pouvez également ajouter un logo ou un titre de site ici #}
+{# Pensez à ajouter des attributs ARIA pour améliorer l'accessibilité de votre navigation #}
+{# Vous pouvez également envisager d'utiliser un menu déroulant pour les sous-catégories de formation #}
