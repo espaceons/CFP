@@ -6,7 +6,12 @@
     {% include 'includes/_head.html' %}
 
     <body>
-        {% include 'includes/_header.html' %}
+        {# Vérifier si l'utilisateur est authentifié #}
+       
+            {% include 'includes/_header.html' %} {# Inclure la barre de navigation pour les utilisateurs authentifiés #}
+
+        {# Inclure le header du site #}
+        
 
         <main> {# Utilisation d'une balise sémantique pour le contenu principal #}
             {% block content %}

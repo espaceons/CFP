@@ -1,0 +1,18 @@
+{# gestion_users/templates/registration/logout.html #}
+
+{% extends 'base.html' %}
+
+{% block title %}Déconnexion - Mon Centre{% endblock %}
+
+{% block content %}
+    <h2>Déconnexion réussie</h2>
+
+    <p>Vous avez été déconnecté du site.</p>
+
+    <p><a href="{% url 'gestion_users:login' %}">Cliquez ici pour vous reconnecter.</a></p>
+
+{% endblock %}
+
+{# Vous pouvez également ajouter un lien vers la page d'accueil ou d'autres sections du site #}
+{# Pensez à styliser cette page avec CSS pour l'adapter à votre design #}
+{# Vous pouvez également envisager d'ajouter un message de confirmation ou des instructions supplémentaires #}

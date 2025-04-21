@@ -17,15 +17,25 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
     # URL pour la page d'accueil de l'application gestion_users
     path('', include('gestion_users.urls', namespace='gestion_users')), # Inclut les URLs de l'application gestion_users
     
+    # URL pour la page d'administration de Django
     path('admin/', admin.site.urls),
+    
     # Inclut les URLs de l'application gestion_formations sous le préfixe '/formations/'
     path('formations/', include('gestion_formations.urls', namespace='gestion_formations')),
+    
     # Vous inclurez les URLs des autres applications ici plus tard
-    # path('users/', include('gestion_users.urls', namespace='gestion_users')),
+
     # path('inscriptions/', include('gestion_inscriptions.urls', namespace='gestion_inscriptions')),
     # path('notes/', include('gestion_notes.urls', namespace='gestion_notes')),
 ]
+
+if settings.DEBUG:
+    from django.conf.urls.static import static
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

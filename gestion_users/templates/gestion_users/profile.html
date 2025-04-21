@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            {% include 'includes/_profile_sidebar.html' %}
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Mon Profil</h3>
+                </div>
+                
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Photo de profil -->
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <img src="{% if user.photo %}{{ user.photo.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
+                                     class="rounded-circle img-thumbnail" 
+                                     alt="Photo de profil" 
+                                     style="width: 150px; height: 150px; object-fit: cover;">
+                            </div>
+                            <h4>{{ user.get_full_name }}</h4>
+                            <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% elif user.role == 'INSTRUCTOR' %}info{% else %}success{% endif %}">
+                                {{ user.get_role_display }}
+                            </span>
+                        </div>
+                        
+                        <!-- Détails du profil -->
+                        <div class="col-md-8">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th width="30%">Nom d'utilisateur</th>
+                                            <td>{{ user.username }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email</th>
+                                            <td>{{ user.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Téléphone</th>
+                                            <td>{{ user.telephone|default:"Non renseigné" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date de naissance</th>
+                                            <td>{{ user.date_naissance|date:"d/m/Y"|default:"Non renseignée" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Adresse</th>
+                                            <td>{{ user.adress|default:"Non renseignée"|linebreaks }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Dernière connexion</th>
+                                            <td>{{ user.last_login|date:"d/m/Y H:i"|default:"Jamais" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Date d'inscription</th>
+                                            <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="{% url 'gestion_users:edit_profile' %}" class="btn btn-primary"><i class="bi bi-pencil-square">Modifier mon profil</i></a>
+                                
+                                {% if user.role == 'STUDENT' %}
+                                        <a href="#" class="btn btn-outline-secondary"> <i class="bi bi-book"></i> Mes formations </a>
+                                    {% elif user.role == 'INSTRUCTOR' %}
+                                        <a href="#" class="btn btn-outline-secondary"> <i class="bi bi-easel">Mes cours</i> </a>
+                                    {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

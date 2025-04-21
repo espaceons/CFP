@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'gestion_formations',# gestion des formations
     'gestion_inscriptions',# gestion des inscriptions
     'gestion_notes',# gestion des notes
+    'widget_tweaks',# pour les widgets de formulaire
 ]
 
 MIDDLEWARE = [
@@ -131,3 +132,53 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# configuration de statics
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# configuration de media
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+
+# --- Configuration Email pour GMAIL (Production) ---
+
+# À utiliser en production. N'oubliez pas d'utiliser des variables d'environnement pour les identifiants !
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'       # L'hôte SMTP de Gmail
+EMAIL_PORT = 587                         # Le port standard pour TLS
+EMAIL_USE_TLS = True                     # Utiliser TLS
+EMAIL_USE_SSL = False                    # Ne pas utiliser SSL si vous utilisez TLS sur le port 587
+
+# Votre adresse email Gmail complète
+EMAIL_HOST_USER = 'smrjemaa@gmail.com' # <-- VOTRE adresse Gmail
+
+# *** IMPORTANT : Ce n'est PAS votre mot de passe Gmail habituel ! ***
+# Vous devez générer un "Mot de passe d'application" Google.
+EMAIL_HOST_PASSWORD = '123.456.SamirYosra' # <-- À REMPLACER par le Mot de passe d'application
+
+# L'adresse email qui apparaîtra dans le champ "De"
+# Elle doit correspondre à votre EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = 'jemaa samir <smrjemaa@gmail.com>' # <-- À REMPLACER (Nom optionnel)
+
+# Adresse email pour les notifications d'erreur du serveur
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Optionnel : Timeout de connexion
+# EMAIL_TIMEOUT = 5
+
+# --- Fin Configuration Email GMAIL ---
+
+
+# --- Configuration Email (pour le DÉVELOPPEMENT) ---
+# Activez CELA en développement, DESACTIVEZ la configuration PRODUCTION ci-dessus
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# --- Fin Configuration Email (pour le DÉVELOPPEMENT) ---
+

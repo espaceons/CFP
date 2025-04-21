@@ -1,24 +1,66 @@
-<nav>
-    <ul>
-        <li><a href="{% url 'gestion_formations:list' %}">Formations</a></li> {# Exemple de lien utilisant le nom d'URL #}
-        {# Ajoutez d'autres liens de navigation #}
-        {% if user.is_authenticated %}
-            {# Liens pour utilisateurs connectés (profil, déconnexion, etc.) #}
-            <li><a href="{% url 'logout' %}">Déconnexion</a></li> {# Assurez-vous d'avoir une URL de déconnexion configurée #}
-            <li>Bonjour, {{ user.get_full_name|default:user.username }}</li>
-        {% else %}
-            {# Liens pour utilisateurs déconnectés (connexion, inscription) #}
-            <li><a href="{% url 'login' %}">Connexion</a></li> {# Assurez-vous d'avoir une URL de connexion configurée #}
-            {# <li><a href="{% url 'signup' %}">Inscription</a></li> #}
-        {% endif %}
-    </ul>
+{# mon_projet/templates/includes/_nav.html (ou _nav_public.html / _nav_authenticated.html) #}
+
+{# CE FICHIER NE DOIT PAS INCLURE _header.html OU base.html #}
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        {# Le Brand/Logo est généralement dans _header.html, pas ici #}
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                 <li class="nav-item">
+                     <a class="nav-link" href="#">Acceuil</a>
+                 </li>
+                 <li class="nav-item">
+                    <a class="nav-link" href="#">Formateur</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Classe</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Planning</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Note</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gestion_formations:list' %}">Formations</a>
+                </li>
+                 {# Autres liens... #}
+            </ul>
+
+            <ul class="navbar-nav ms-auto">
+                {% if user.is_authenticated %}
+                    
+                    {# Liens utilisateur connecté ici, SANS INCLUSION QUI REMONTE #}
+                    <li class="nav-item">
+                        <span class="nav-link">Bonjour, {{ user.first_name|default:user.username }}</span>
+                    </li>
+                    <li class="nav-item">
+                         <a class="nav-link" href="{% url 'gestion_users:profile' %}">Mon Profil</a>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'gestion_users:logout' %}" class="form-inline">
+                            {% csrf_token %}
+                            <a href="{% url 'gestion_users:logout' %}" class="nav-link text-danger"><i class="bi bi-box-arrow-right me-2"> Déconnexion</i></a>
+                        </form>
+                    </li>
+                {% else %}
+                    {# Liens utilisateur déconnecté ici, SANS INCLUSION QUI REMONTE #}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'gestion_users:login' %}">Connexion</a>
+                    </li>
+                    {% if not settings.SSO_ENABLED %}
+                         <li class="nav-item">
+                             <a class="nav-link" href="{% url 'gestion_users:signup' %}">Inscription</a>
+                         </li>
+                     {% endif %}
+                {% endif %}
+            </ul>
+        </div>
+    </div>
 </nav>
-{# Ajoutez d'autres éléments de navigation ou des fonctionnalités selon vos besoins #}
-{# Vous pouvez également ajouter un formulaire de recherche ou d'autres éléments interactifs ici #}
-{# Pensez à styliser cette navigation avec CSS pour l'adapter à votre design #}
-{# Vous pouvez également utiliser Bootstrap ou un autre framework CSS pour une navigation plus avancée #}
-{# N'oubliez pas de tester la navigation sur différents appareils pour assurer une bonne expérience utilisateur #}
-{# Si vous utilisez des icônes, pensez à les intégrer ici #}
-{# Vous pouvez également ajouter un logo ou un titre de site ici #}
-{# Pensez à ajouter des attributs ARIA pour améliorer l'accessibilité de votre navigation #}
-{# Vous pouvez également envisager d'utiliser un menu déroulant pour les sous-catégories de formation #}

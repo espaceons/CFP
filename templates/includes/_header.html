@@ -1,5 +1,25 @@
+
+{% load static %}
+{% load i18n %} {# Utile si vous traduisez le nom du site, etc. #}
+
 <header>
-    <h1>Nom de Votre Centre de Formation</h1>
-    {# Inclure la navigation ici #}
-    {% include 'includes/_nav.html' %}
+    <div class="container">
+        
+        <div class="d-flex justify-content-between align-items-center"> {# Aligne horizontalement le contenu #}
+           
+                 {# L'image du logo (assurez-vous du chemin correct dans votre static files) #}
+                <img src="{% static 'images/logo.png' %}" alt="Logo Mon CFP" height="40"> {# Ajustez height si besoin #}
+
+                {# Optionnel : Garder le texte du nom du site à côté du logo #}
+                <h1>  Centre CFP  </h1>
+            </a>
+            
+    </div>
+  
+ 
+    {% if user.is_authenticated %}
+            {% include 'includes/_nav.html' %} {# Inclure la barre de navigation pour les utilisateurs authentifiés #}
+        {% else %}
+            {% include 'includes/_nav_public.html' %} {# Inclure la barre de navigation pour les utilisateurs non authentifiés #}
+        {% endif %}
 </header>
