@@ -1,0 +1,108 @@
+{# gestion_inscriptions/templates/gestion_inscriptions/session_detail.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titre_page|default:"Détails de la session" }} - Mon Centre{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1>{{ titre_page|default:"Détails de la session" }}</h1>
+
+        {# --- Affichage des informations de la session --- #}
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Détails de la Session
+            </div>
+            <div class="card-body">
+                 <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                             <tr>
+                                <th width="30%">Nom Session</th>
+                                <td>{{ session.nom_session }}</td>
+                            </tr>
+                             <tr>
+                                <th>Formation</th>
+                                {# Accède au nom de la formation liée #}
+                                <td>{{ session.formation.nom_formation }}</td>
+                            </tr>
+                            <tr>
+                                <th>Formateur</th>
+                                {# Accède au nom du formateur lié (gère le cas où il n'y a pas de formateur) #}
+                                <td>{{ session.instructor.user.get_full_name|default:session.instructor.user.username|default:"Non assigné" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date Début</th>
+                                <td>{{ session.date_debut_session|date:"d/m/Y" }}</td>
+                            </tr>
+                             <tr>
+                                <th>Date Fin</th>
+                                <td>{{ session.date_fin_session|date:"d/m/Y" }}</td>
+                            </tr>
+                             {# Ajoutez d'autres champs de la Session ici (lieu, horaires, etc.) #}
+                             {# <tr><th>Lieu</th><td>{{ session.lieu|default:"-" }}</td></tr> #}
+                        </tbody>
+                    </table>
+                 </div>
+            </div>
+        </div>
+        {# --- Fin Affichage Session --- #}
+
+        {# --- Affichage de la liste des étudiants inscrits (seulement si l'utilisateur est le formateur ou un admin) --- #}
+        {% if can_see_inscrits %} {# La variable 'can_see_inscrits' vient de la vue #}
+             <div class="card mb-4">
+                 <div class="card-header bg-success text-white">
+                    Étudiants Inscrits ({{ inscriptions_session|length }} inscrits) {# Affiche le compte si la liste est présente #}
+                </div>
+                <div class="card-body">
+                    {% if inscriptions_session %} {# S'il y a des inscriptions passées par la vue #}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Étudiant</th>
+                                        <th>Statut</th>
+                                        <th>Date Inscription</th>
+                                        {# Optionnel : Colonnes d'évaluation si pertinente ici #}
+                                        {# <th>Note Moyenne</th> #}
+                                        <th>Action</th> {# Ex: Voir détails inscription #}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in inscriptions_session %}
+                                        <tr>
+                                            {# Accède au nom de l'étudiant via l'inscription liée #}
+                                            <td>{{ enrollment.student.user.get_full_name|default:enrollment.student.user.username }}</td>
+                                            <td>{{ enrollment.get_statut_display|default:"-" }}</td>
+                                            <td>{{ enrollment.date_inscription|date:"d/m/Y" }}</td>
+                                            {# Optionnel : Calcul/affichage d'une note moyenne ou autre info agrégée #}
+                                            {# <td>{% if enrollment.evaluation_set.all %}...{% endif %}</td> #}
+                                            <td>
+                                                {# Lien vers les détails de cette inscription spécifique #}
+                                                {# Assurez-vous que l'URL 'gestion_inscriptions:enrollment_detail' existe #}
+                                                <a href="{% url 'gestion_inscriptions:enrollment_detail' pk=enrollment.pk %}" class="btn btn-sm btn-outline-info">Détails Inscription</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p>Aucun étudiant inscrit à cette session pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %} {# Message si l'utilisateur n'est PAS autorisé à voir la liste des inscrits #}
+            <p>Vous n'êtes pas autorisé à voir la liste des inscrits pour cette session.</p>
+        {% endif %}
+        {# --- Fin Affichage Liste Inscrits --- #}
+
+
+        {# Bouton de retour #}
+        <p>
+             <a href="{% url 'gestion_inscriptions:instructor_sessions' %}" class="btn btn-secondary mt-3">Retour à Mes Cours Enseignés</a> {# Redirige vers la liste des sessions enseignées #}
+        </p>
+
+
+    </div>
+{% endblock %}

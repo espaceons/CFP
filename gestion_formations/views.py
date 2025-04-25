@@ -23,7 +23,7 @@ def formation_list(request):
 
 
 
-# NOUVELLE VUE basée sur une classe pour le détail:
+# VUE basée sur une classe pour le détail:
 #-------------------------------------------------
 # class FormationDetailView(DetailView):
 #     """

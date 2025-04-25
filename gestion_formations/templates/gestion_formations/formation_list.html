@@ -1,24 +1,21 @@
-{% extends 'base.html' %} {# Assumez que vous avez un template de base pour la structure générale #}
+{# gestion_formations/templates/gestion_formations/formation_list.html #}
 
-{% block title %}{{ titre_page }}{% endblock %} {# Utilise le titre passé depuis la vue #}
+{% extends 'base.html' %} {# Indique qu'il hérite de base.html #}
 
-{% block content %}
+{% block title %}{{ titre_page }} - Mon Centre{% endblock %} {# Surcharge le bloc titre de base.html #}
+
+{% block content %} {# Remplit le bloc content défini dans base.html #}
     <h1>{{ titre_page }}</h1>
 
     {% if formations %}
         <ul>
             {% for formation in formations %}
                 <li>
-                    {# Le lien vers la page de détail #}
-                    <a href="{% url 'gestion_formations:detail' formation.pk %}">
-                        <h2>{{ formation.nom }}</h2>
-                    </a>
-                    
-                    <p>{{ formation.description|truncatechars:200 }}</p> {# Affiche une partie de la description #}
+                    <h2>{{ formation.nom }}</h2>
+                    <p>{{ formation.description|truncatechars:200 }}</p>
                     <p>Durée estimée : {{ formation.duree_heures|default:"Non spécifié" }} heures</p>
-                    {# Plus tard, ajouter un lien vers la page de détail de la formation #}
+                    {# Lien vers la page de détail (nous la créerons ensuite) #}
                     <p><a href="{% url 'gestion_formations:detail' formation.pk %}">Voir détails et sessions</a></p>
-                    
                 </li>
             {% endfor %}
         </ul>
@@ -27,3 +24,13 @@
     {% endif %}
 
 {% endblock %}
+
+{# Exemple si vous vouliez ajouter un script spécifique juste pour cette page #}
+{# {% block extra_scripts %} #}
+{# <script>alert("Bienvenue sur la liste des formations!");</script> #}
+{# {% endblock %} #}
+
+{# Exemple si vous vouliez ajouter quelque chose dans le head spécifique à cette page #}
+{# {% block extra_head %} #}
+{# <meta name="keywords" content="formations, cours, centre"> #}
+{# {% endblock %} #}

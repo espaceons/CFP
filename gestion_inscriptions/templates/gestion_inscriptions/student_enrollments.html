@@ -1,0 +1,54 @@
+{# gestion_inscriptions/templates/gestion_inscriptions/student_enrollments.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titre_page|default:"Mes Formations" }} - Mon Centre{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1>{{ titre_page|default:"Mes Formations" }}</h1>
+
+        {% if enrollments %} {# S'il y a des inscriptions à afficher #}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Formation</th>
+                            <th>Session</th>
+                            <th>Statut</th>
+                            <th>Date d'inscription</th>
+                            {# Ajoutez d'autres colonnes si vous voulez afficher d'autres infos de l'inscription #}
+                            <th>Évaluation</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in enrollments %} {# Boucle sur la liste des inscriptions #}
+                            <tr>
+                                {# Accède à la formation via la session liée #}
+                                <td>{{ enrollment.session.formation.nom_formation }}</td>
+                                {# Accède au nom de la session liée #}
+                                <td>{{ enrollment.session.nom_session }}</td>
+                                {# Affiche le statut de l'inscription (si vous avez un champ statut avec choices) #}
+                                <td>{{ enrollment.get_statut_display|default:"-" }}</td>
+                                {# Affiche la date d'inscription #}
+                                <td>{{ enrollment.date_inscription|date:"d/m/Y" }}</td>
+                                {# Affiche evaluation #}
+                                <td>{{ enrollment.evaluation_set.first.evaluation_type.nom|default:"-" }}</td> {# Exemple d'accès à une évaluation liée #}
+                                {# Affiche note d'evaluation #}
+                                <td>{{ enrollment.evaluation_set.first.note|default:"-" }}</td>
+                                {# Affichez d'autres données de l'inscription si nécessaire #}
+                            </tr>
+                        {% endfor %} {# Fin de la boucle #}
+                    </tbody>
+                </table>
+            </div>
+        {% else %} {# S'il n'y a aucune inscription #}
+            <p>Vous n'êtes actuellement inscrit à aucune formation.</p>
+        {% endif %}
+
+        {# Optionnel : Bouton de retour ou lien #}
+        <p><a href="{% url 'gestion_users:profile' %}" class="btn btn-secondary mt-3">Retour au Profil</a></p>
+
+    </div>
+{% endblock %}

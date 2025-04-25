@@ -1,0 +1,180 @@
+{# gestion_users/templates/gestion_users/edit_profile.html - Avec affichage de l'image utilisateur #}
+{% extends 'base.html' %} {# Hérite de votre template de base #}
+{% load static %} {# Charge les balises pour les fichiers statiques #}
+{% load widget_tweaks %} {# Charge widget_tweaks pour les filtres comme |add_class #}
+
+{# Définit le titre de la page #}
+{% block title %}{{ titre_page|default:"Modifier mon Profil" }} - Mon Centre{% endblock %}
+
+{# ==================== Début du contenu principal de la page ==================== #}
+{% block content %}
+
+    {# --- Section pour afficher les messages de Django --- #}
+    {# Utile après la soumission du formulaire (succès, erreur) #}
+    {# Si vos messages sont déjà affichés dans votre base.html, vous pouvez commenter ou retirer ce bloc d'ici. #}
+    {% if messages %}
+        <div class="container mt-3"> {# Conteneur pour centrer et limiter la largeur #}
+            <ul class="messages list-unstyled"> {# Liste sans puces #}
+                {% for message in messages %}
+                    {# Applique les classes d'alerte Bootstrap en fonction des tags du message #}
+                    <li class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'info' %}info{% elif message.tags == 'warning' %}warning{% endif %}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    {# --- Fin de la section messages --- #}
+
+
+    <div class="container py-5"> {# Conteneur principal avec padding vertical #}
+         <div class="row justify-content-center"> {# Centre la colonne #}
+             <div class="col-md-8 col-lg-6"> {# Définit la largeur de la colonne #}
+
+                 <div class="card shadow-sm"> {# Une carte Bootstrap #}
+
+                     {# En-tête de la carte #}
+                     <div class="card-header bg-primary text-white">
+                         {# Utilise la variable titre_page passée par la vue #}
+                         <h3 class="mb-0">{{ titre_page|default:"Modifier mon Profil" }}</h3>
+                     </div>
+
+                     {# Corps de la carte (contient la photo et le formulaire) #}
+                     <div class="card-body">
+
+                         {# --- Affichage de la photo de profil actuelle (CODE QUE VOUS VOULEZ INSERER) --- #}
+                         {# Afficher la photo de l'utilisateur si le champ 'photo' existe et est renseigné #}
+                         {# Sinon, afficher l'image par défaut #}
+                         <div class="text-center mb-4"> {# Centrer l'image et ajouter une marge en bas #}
+                              <img src="{% if user.photo and user.photo.url %}{{ user.photo.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
+                                     class="rounded-circle img-thumbnail" {# Classes Bootstrap #}
+                                     alt="Photo de profil actuelle" {# Texte alternatif #}
+                                     style="width: 100px; height: 100px; object-fit: cover;"> {# Taille ajustée pour le formulaire #}
+                         </div>
+                         {# --- Fin Affichage photo --- #}
+
+
+                         {# --- Formulaire de modification --- #}
+                         {# === AJOUTEZ enctype="multipart/form-data" ici si vous ajoutez un champ de fichier (comme la photo) au formulaire === #}
+                         <form method="post" enctype="multipart/form-data"> {# Ajoutez cet attribut si le formulaire gère des fichiers #}
+                             {% csrf_token %} {# Balise de sécurité CSRF - INDISPENSABLE #}
+
+                             {# Afficher les erreurs globales du formulaire (non liées à un champ spécifique) #}
+                             {% if form.non_field_errors %}
+                                 <div class="alert alert-danger">
+                                     {% for error in form.non_field_errors %}
+                                         {{ error }}
+                                     {% endfor %}
+                                 </div>
+                             {% endif %}
+
+                             {# Rendu manuel des champs du formulaire avec les classes Bootstrap #}
+                             {# Incluez ici les champs que vous avez dans UserProfileForm, y compris le champ 'photo' si vous l'y ajoutez #}
+
+                             {# --- Champ pour uploader une NOUVELLE photo (seulement si ce champ est dans votre UserProfileForm) --- #}
+                             {# Si vous avez ajouté le champ 'photo' à UserProfileForm, affichez-le ici #}
+                             {% if form.photo %} {# Vérifie si le champ 'photo' existe dans le formulaire #}
+                                 <div class="mb-3">
+                                     <label for="{{ form.photo.id_for_label }}" class="form-label">{{ form.photo.label }}</label>
+                                     {# Le champ fichier n'utilise pas form-control comme les champs texte #}
+                                     {{ form.photo }} {# Rendu simple du champ fichier #}
+                                     {% if form.photo.errors %}
+                                         <div class="invalid-feedback d-block">{% for error in form.photo.errors %}{{ error }}{% endfor %}</div>
+                                     {% endif %}
+                                     {# Optionnel : Afficher l'image actuelle à côté ou gérer la suppression #}
+                                     {# {% if user.photo %} Actuelle : <a href="{{ user.photo.url }}">{{ user.photo.name }}</a> {% endif %} #}
+                                 </div>
+                             {% endif %}
+                             {# --- Fin champ photo pour upload --- #}
+
+
+                             {# Champ Prénom #}
+                             <div class="mb-3">
+                                 <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
+                                 {{ form.first_name|add_class:"form-control" }} {# Applique la classe form-control #}
+                                 {% if form.first_name.errors %}
+                                     <div class="invalid-feedback d-block">{% for error in form.first_name.errors %}{{ error }}{% endfor %}</div>
+                                 {% endif %}
+                             </div>
+
+                             {# Champ Nom #}
+                             <div class="mb-3">
+                                 <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
+                                 {{ form.last_name|add_class:"form-control" }}
+                                 {% if form.last_name.errors %}
+                                     <div class="invalid-feedback d-block">{% for error in form.last_name.errors %}{{ error }}{% endfor %}</div>
+                                 {% endif %}
+                             </div>
+
+                              {# Champ Email #}
+                             <div class="mb-3">
+                                 <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
+                                  {# L'email peut souvent être non modifiable ou nécessiter une confirmation #}
+                                 {# Si vous ne voulez pas qu'il soit modifiable, retirez-le du UserProfileForm et de l'affichage ici #}
+                                 {{ form.email|add_class:"form-control" }}
+                                 {% if form.email.errors %}
+                                     <div class="invalid-feedback d-block">{% for error in form.email.errors %}{{ error }}{% endfor %}</div>
+                                 {% endif %}
+                             </div>
+
+
+                             {# Champ Téléphone #}
+                             <div class="mb-3">
+                                 <label for="{{ form.telephone.id_for_label }}" class="form-label">{{ form.telephone.label }}</label>
+                                 {{ form.telephone|add_class:"form-control" }}
+                                 {% if form.telephone.errors %}
+                                     <div class="invalid-feedback d-block">{% for error in form.telephone.errors %}{{ error }}{% endfor %}</div>
+                                 {% endif %}
+                             </div>
+
+                             {# Champ Date de naissance #}
+                             <div class="mb-3">
+                                 <label for="{{ form.date_naissance.id_for_label }}" class="form-label">{{ form.date_naissance.label }}</label>
+                                  {# Le widget dans le formulaire devrait déjà définir type="date" #}
+                                 {{ form.date_naissance|add_class:"form-control" }}
+                                 {% if form.date_naissance.errors %}
+                                     <div class="invalid-feedback d-block">{% for error in form.date_naissance.errors %}{{ error }}{% endfor %}</div>
+                                 {% endif %}
+                             </div>
+
+                             {# Champ Adresse #}
+                             <div class="mb-3">
+                                 <label for="{{ form.adress.id_for_label }}" class="form-label">{{ form.adress.label }}</label>
+                                  {# Pour une zone de texte (TextField), utilisez le widget Textarea dans votre UserProfileForm #}
+                                 {{ form.adress|add_class:"form-control" }}
+                                 {% if form.adress.errors %}
+                                     <div class="invalid-feedback d-block">{% for error in form.adress.errors %}{{ error }}{% endfor %}</div>
+                                 {% endif %}
+                             </div>
+
+
+                             {# Bouton de soumission #}
+                             <button type="submit" class="btn btn-success w-100 mt-3">
+                                  <i class="bi bi-check-circle me-1"></i> Enregistrer les modifications
+                             </button> {# Bouton vert, largeur 100%, marge supérieure #}
+
+                         </form>
+                         {# --- Fin du formulaire --- #}
+
+                         {# Lien de retour #}
+                         <div class="mt-3 text-center">
+                              <a href="{% url 'gestion_users:profile' %}">Annuler</a>
+                         </div>
+
+                     </div> {# Fin card-body #}
+                 </div> {# Fin card #}
+
+             </div> {# Fin col #}
+         </div> {# Fin row #}
+    </div> {# Fin container #}
+
+{% endblock %}
+{# ==================== Fin du contenu principal de la page ==================== #}
+
+{# Rappel : #}
+{# Ce template étend base.html. #}
+{# Votre vue edit_profile_view doit passer dans le contexte : form et titre_page. #}
+{# Bootstrap CSS et Bootstrap Icons CSS doivent être inclus dans base.html ou ses includes. ##}
+{# Assurez-vous que widget_tweaks est installé et ajouté à INSTALLED_APPS si vous utilisez |add_class. #}
+{# Les URLs nommées utilisées ({% url 'gestion_users:profile' %}) doivent être définies dans vos urls.py. #}
+{# Assurez-vous que le champ 'photo' existe sur votre modèle CustomUser et que la configuration des fichiers média est faite. #}

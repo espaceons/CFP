@@ -20,15 +20,18 @@ class UserProfileForm(forms.ModelForm):
             'telephone',
             'adress',
             'date_naissance',
+            'photo',
             # N'incluez pas le 'role', 'is_staff', etc. ici, ce n'est pas pour l'utilisateur lui-même.
         ]
         widgets = {
              # Exemple : utiliser un type date pour le champ date_naissance
-             'date_naissance': forms.DateInput(attrs={'type': 'date'})
+             'date_naissance': forms.DateInput(attrs={'type': 'date'}),
+             'adress': forms.Textarea(attrs={'rows': 4}), # Exemple de widget pour l'adresse
         }
         labels = {
              # Exemple : personnaliser un label si besoin
              # 'telephone': 'Numéro de téléphone'
+             'photo': 'Photo de profil', # Label pour le champ photo
         }
 
 # Si vous avez d'autres formulaires pour la gestion des utilisateurs (signup, etc.), ils iraient ici.
@@ -61,10 +64,11 @@ class CustomAuthenticationForm(AuthenticationForm):
 class CustomUserCreationForm(UserCreationForm):
     """
     Formulaire personnalisé pour créer un nouvel utilisateur CustomUser.
-    Inclut les champs supplémentaires du modèle CustomUser.
+    Inclut les champs supplémentaires du modèle CustomUser ET le champ photo.
     """
     class Meta(UserCreationForm.Meta):
         model = CustomUser # Utilise votre modèle CustomUser
+        # --- AJOUTEZ 'photo' à la liste des champs pour l'inscription ---
         fields = UserCreationForm.Meta.fields + (
             'first_name',
             'last_name',
@@ -72,25 +76,26 @@ class CustomUserCreationForm(UserCreationForm):
             'telephone',
             'adress',
             'date_naissance',
-            # N'incluez PAS le champ 'role' dans un formulaire d'inscription public,
-            # sauf si vous gérez explicitement qui peut s'inscrire avec quel rôle (complexe et non recommandé).
-            # Le rôle sera défini par défaut dans le modèle (STUDENT) ou géré dans la vue.
+            'photo', # <-- AJOUTEZ LE CHAMP PHOTO ICI pour le formulaire d'inscription
         )
-        # Vous pouvez ajouter des widgets ou des labels personnalisés ici si nécessaire pour ces champs
+        # --- Fin des champs ---
+
+        # Vous pouvez ajouter des widgets ou des labels personnalisés ici
         widgets = {
-             'date_naissance': forms.DateInput(attrs={'type': 'date'})
+             'date_naissance': forms.DateInput(attrs={'type': 'date'}),
+             'adress': forms.Textarea(attrs={'rows': 4}), # Exemple de widget pour l'adresse
         }
-        # labels = {
-        #      'telephone': 'Numéro de téléphone',
-        #      'adress': 'Adresse',
-        #      'date_naissance': 'Date de naissance',
-        # }
+        labels = {
+             'photo': 'Photo de profil', # Label pour le champ photo
+             # Ajoutez des labels pour les autres champs si vous voulez personnaliser #
+         }
+
 
     # Optionnel : Vous pouvez override la méthode save si vous avez besoin de logique supplémentaire
     # def save(self, commit=True):
     #     user = super().save(commit=False)
-    #     # Vous pourriez définir le rôle ici si vous ne voulez pas utiliser le default du modèle
-    #     # user.role = CustomUser.UserRole.STUDENT # Force le rôle à étudiant
+    #     # Le rôle est déjà défini par défaut dans le modèle CustomUser (STUDENT)
+    #     # Si vous deviez changer le rôle ici, ce serait avant user.save() si commit=False
     #     if commit:
-    #         user.save()
+    #         user.save() # Sauvegarde l'objet user, y compris le fichier photo si présent
     #     return user

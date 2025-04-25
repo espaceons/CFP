@@ -1,0 +1,50 @@
+{# gestion_inscriptions/templates/gestion_inscriptions/instructor_sessions.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titre_page|default:"Mes Cours" }} - Mon Centre{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1>{{ titre_page|default:"Mes Cours" }}</h1>
+
+        {% if sessions_enseignees %} {# S'il y a des sessions à afficher #}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Session</th>
+                            <th>Formation</th>
+                            <th>Date Début</th>
+                            <th>Date Fin</th>
+                            <th>Nombre d'inscrits</th>
+                            {# Ajoutez d'autres colonnes si vous voulez afficher d'autres infos de la session #}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in sessions_enseignees %} {# Boucle sur la liste des sessions #}
+                            <tr>
+                                {# Affiche le nom de la session #}
+                                <td>{{ session.nom_session }}</td>
+                                {# Accède au nom de la formation liée #}
+                                <td>{{ session.formation.nom_formation }}</td>
+                                {# Affiche les dates de la session #}
+                                <td>{{ session.date_debut_session|date:"d/m/Y" }}</td>
+                                <td>{{ session.date_fin_session|date:"d/m/Y" }}</td>
+                                {# Afficher le nombre d'inscrits #}
+                                <td>{{ session.enrollment_set.count }}</td>
+                                {# Exemple : Afficher le nombre d'inscrits (si vous avez un related_name='enrollments' sur Enrollment vers Session) #}
+                            </tr>
+                        {% endfor %} {# Fin de la boucle #}
+                    </tbody>
+                </table>
+            </div>
+        {% else %} {# S'il n'y a aucune session assignée #}
+            <p>Aucune session ne vous est actuellement assignée comme formateur.</p>
+        {% endif %}
+
+         {# Optionnel : Bouton de retour ou lien #}
+        <p><a href="{% url 'gestion_users:profile' %}" class="btn btn-secondary mt-3">Retour au Profil</a></p>
+
+    </div>
+{% endblock %}

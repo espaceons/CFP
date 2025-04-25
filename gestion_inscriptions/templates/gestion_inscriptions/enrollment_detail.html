@@ -1,0 +1,124 @@
+{# gestion_inscriptions/templates/gestion_inscriptions/enrollment_detail.html #}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ titre_page|default:"Détails de l'inscription" }} - Mon Centre{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+        <h1>{{ titre_page|default:"Détails de l'inscription" }}</h1>
+
+        {# --- Affichage des informations de l'inscription --- #}
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                Détails de l'inscription
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <tbody>
+                            <tr>
+                                <th width="30%">ID Inscription</th>
+                                <td>{{ enrollment.pk }}</td>
+                            </tr>
+                            <tr>
+                                <th>Étudiant</th>
+                                {# Accède au nom de l'utilisateur via l'étudiant lié #}
+                                <td>{{ enrollment.student.user.get_full_name|default:enrollment.student.user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>Formation</th>
+                                {# Accède au nom de la formation via la session liée #}
+                                <td>{{ enrollment.session.formation.nom_formation }}</td>
+                            </tr>
+                            <tr>
+                                <th>Session</th>
+                                {# Accède au nom de la session liée #}
+                                <td>{{ enrollment.session.nom_session }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date Début Session</th>
+                                <td>{{ enrollment.session.date_debut_session|date:"d/m/Y" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date Fin Session</th>
+                                <td>{{ enrollment.session.date_fin_session|date:"d/m/Y" }}</td>
+                            </tr>
+                             <tr>
+                                <th>Formateur</th>
+                                {# Accède au nom du formateur via la session liée (gère le cas où il n'y a pas de formateur) #}
+                                <td>{{ enrollment.session.instructor.user.get_full_name|default:enrollment.session.instructor.user.username|default:"Non assigné" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Statut Inscription</th>
+                                <td>{{ enrollment.get_statut_display|default:"-" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date Inscription</th>
+                                <td>{{ enrollment.date_inscription|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            {# Ajoutez d'autres champs de l'Inscription ici #}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {# --- Fin Affichage Inscription --- #}
+
+        {# --- Affichage des Évaluations liées à cette inscription (seulement si l'utilisateur est l'étudiant ou un autorisé) --- #}
+        {# La variable 'is_student_concerned' ou 'is_instructor_concerned' vient de la vue si vous l'avez passée #}
+        {# On affiche les évaluations si l'utilisateur est l'étudiant, le formateur ou un admin #}
+        {% if is_student_concerned or is_instructor_concerned or request.user.is_staff or request.user.is_superuser %}
+            <div class="card mb-4">
+                 <div class="card-header bg-secondary text-white">
+                    Évaluations liées
+                </div>
+                <div class="card-body">
+                    {% if evaluations %} {# S'il y a des évaluations liées passées par la vue #}
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Note</th>
+                                        <th>Date Évaluation</th>
+                                        <th>Séance</th> {# Si vous avez un champ seance sur Evaluation #}
+                                        {# Ajoutez d'autres colonnes d'évaluation #}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for evaluation in evaluations %}
+                                        <tr>
+                                            {# Accède au nom du type d'évaluation lié #}
+                                            <td>{{ evaluation.evaluation_type.nom }}</td>
+                                            <td>{{ evaluation.note|default:"-" }}</td>
+                                            <td>{{ evaluation.date_evaluation|date:"d/m/Y H:i"|default:"-" }}</td>
+                                            {# Accède au nom/date de la séance liée si le champ seance existe #}
+                                            <td>{{ evaluation.seance.nom|default:evaluation.seance.date|date:"d/m/Y H:i"|default:"-" }}</td> {# Adaptez l'affichage de la séance #}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                         <p>Aucune évaluation enregistrée pour cette inscription pour le moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        {# --- Fin Affichage Évaluations --- #}
+
+
+        {# Bouton de retour #}
+        <p>
+            {% if is_student_concerned %}
+                 <a href="{% url 'gestion_inscriptions:student_enrollments' %}" class="btn btn-secondary">Retour à Mes Formations</a>
+            {% elif is_instructor_concerned %}
+                 <a href="{% url 'gestion_inscriptions:instructor_sessions' %}" class="btn btn-secondary">Retour à Mes Cours Enseignés</a>
+            {% else %} {# Admin/Staff ou autre, rediriger vers une page par défaut #}
+                 <a href="{% url 'gestion_users:profile' %}" class="btn btn-secondary">Retour au Profil</a>
+            {% endif %}
+        </p>
+
+    </div>
+{% endblock %}

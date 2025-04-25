@@ -5,17 +5,13 @@ from django.utils.translation import gettext_lazy as _
 # liaison des sessions et potentiellement les séances à un formateur
 
 
-class Formation(models.Model):
+class Formation(models.Model): # cours
     """
     Modèle représentant une formation ou un cours.
     """
     nom = models.CharField(max_length=255, verbose_name=_("Nom de la formation"))
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
-    duree_heures = models.PositiveIntegerField(
-        blank=True,
-        null=True,
-        verbose_name=_("Durée totale en heures") # Durée totale estimée de la formation
-    )
+    duree_heures = models.PositiveIntegerField( blank=True, null=True, verbose_name=_("Durée totale en heures") ) # Durée totale estimée de la formation
     objectifs = models.TextField(blank=True, null=True, verbose_name=_("Objectifs"))
     prerequis = models.TextField(blank=True, null=True, verbose_name=_("Prérequis"))
     est_active = models.BooleanField(default=True, verbose_name=_("Est active"))
@@ -27,11 +23,22 @@ class Formation(models.Model):
     def __str__(self):
         return self.nom
 
+
+class SessionStatus(models.TextChoices):
+    PLANNED = 'PLANNED', _('Planifiée')
+    OPEN = 'OPEN', _('Ouverte aux inscriptions')
+    IN_PROGRESS = 'IN_PROGRESS', _('En cours')
+    COMPLETED = 'COMPLETED', _('Terminée')
+    CANCELLED = 'CANCELLED', _('Annulée')
+    
+    
 class Session(models.Model):
     """
     Modèle représentant une instance spécifique (une "cohorte") d'une formation.
     Contient les informations générales de la session (période, formateur principal, capacité).
     """
+    
+    statut = models.CharField( max_length=50, choices=SessionStatus.choices, default=SessionStatus.PLANNED, verbose_name=_("Statut de la session"))
     formation = models.ForeignKey(Formation, on_delete=models.CASCADE, related_name='sessions', verbose_name=_("Formation")) # Si la formation est supprimée, ses sessions le sont aussi
     nom_session = models.CharField(max_length=255, verbose_name=_("Nom de la session")) # Nom spécifique de cette session (ex: "Automne 2025", "Intensif Été")
     date_debut_session = models.DateField(verbose_name=_("Date de début de la session")) # Période générale
@@ -39,7 +46,9 @@ class Session(models.Model):
     capacite_max = models.PositiveIntegerField(verbose_name=_("Capacité maximale"))
 
     # Formateur principal de la session (peut être différent par séance)
-    instructor_principal = models.ForeignKey( 'gestion_inscriptions.Instructor', on_delete=models.SET_NULL, null=True, blank=True, related_name='sessions_principales', verbose_name=_("Formateur principal") )# Permet d'accéder aux sessions où le formateur est principal ex: instructor.sessions_principales.all()
+    
+    # Permet d'accéder aux sessions où le formateur est principal ex: instructor.sessions_principales.all()
+    instructor_principal = models.ForeignKey( 'gestion_inscriptions.Instructor', on_delete=models.SET_NULL, null=True, blank=True, related_name='sessions_principales', verbose_name=_("Formateur principal") )
     # --- ATTENTION : LE CHAMP 'lieu' EST DÉCLARÉ UNE SEULE FOIS ICI ---
     lieu = models.CharField(max_length=255, blank=True, null=True, verbose_name=_("Lieu de la session")) # Lieu principal de la session (peut être remplacé par séance) exp : salle01, salle02, etc.
     description = models.TextField(blank=True, null=True, verbose_name=_("Description de la session"))
@@ -87,8 +96,8 @@ class Seance(models.Model):
         verbose_name=_("Lieu de la séance")
     )
 
-    sujet_aborde = models.CharField(max_length=255, blank=True, null=True)
-    est_annulee = models.BooleanField(default=False)
+    sujet_aborde = models.CharField(max_length=255, blank=True, null=True) # sujet de la seance
+    est_annulee = models.BooleanField(default=False) # actiuvation ou annulation de la seance
     note_seance = models.TextField(blank=True, null=True, verbose_name=_("Notes de la séance")) # Notes spécifiques à cette séance
     # Vous pouvez ajouter d'autres champs spécifiques à une séance (ex: matériel requis, notes de séance, etc.)
 

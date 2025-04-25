@@ -32,7 +32,7 @@ urlpatterns = [
     
     # Vous inclurez les URLs des autres applications ici plus tard
 
-    # path('inscriptions/', include('gestion_inscriptions.urls', namespace='gestion_inscriptions')),
+    path('inscriptions/', include('gestion_inscriptions.urls', namespace='gestion_inscriptions')),
     # path('notes/', include('gestion_notes.urls', namespace='gestion_notes')),
 ]
 

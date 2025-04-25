@@ -1,88 +1,216 @@
-{% extends 'base.html' %}
-{% load static %}
+{# gestion_users/templates/gestion_users/profile.html - CODE COMPLET et FINAL pour l'instant #}
+{% extends 'base.html' %} {# Hérite de votre template de base #}
+{% load static %} {# Charge les balises pour les fichiers statiques #}
+{% load i18n %} {# Utile si vous traduisez #}
+{% load widget_tweaks %} {# Si vous utilisez des filtres comme |add_class (peut être retiré si non utilisé) #}
 
+{# Définit le titre de la page #}
+{% block title %}{{ titre_page|default:"Mon Profil" }} - Mon Centre{% endblock %}
+
+{# ==================== Début du contenu principal de la page ==================== #}
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <!-- Sidebar -->
-        <div class="col-md-3">
-            {% include 'includes/_profile_sidebar.html' %}
+
+    {# --- Section pour afficher les messages de Django --- #}
+    {# Ce bloc affiche les messages stockés dans la session (succès, erreur, info, etc.) #}
+    {# Si vos messages sont déjà affichés dans votre base.html, vous pouvez commenter ou retirer ce bloc d'ici. #}
+    {% if messages %}
+        <div class="container mt-3"> {# Conteneur pour centrer et limiter la largeur #}
+            <ul class="messages list-unstyled"> {# Liste sans puces #}
+                {% for message in messages %}
+                    {# Applique les classes d'alerte Bootstrap en fonction des tags du message #}
+                    <li class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% elif message.tags == 'info' %}info{% elif message.tags == 'warning' %}warning{% endif %}">
+                        {{ message }}
+                    </li>
+                {% endfor %}
+            </ul>
         </div>
-        
-        <!-- Main Content -->
-        <div class="col-md-9">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">Mon Profil</h3>
-                </div>
-                
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Photo de profil -->
-                        <div class="col-md-4 text-center">
-                            <div class="mb-3">
-                                <img src="{% if user.photo %}{{ user.photo.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}" 
-                                     class="rounded-circle img-thumbnail" 
-                                     alt="Photo de profil" 
-                                     style="width: 150px; height: 150px; object-fit: cover;">
-                            </div>
-                            <h4>{{ user.get_full_name }}</h4>
-                            <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% elif user.role == 'INSTRUCTOR' %}info{% else %}success{% endif %}">
-                                {{ user.get_role_display }}
-                            </span>
-                        </div>
-                        
-                        <!-- Détails du profil -->
-                        <div class="col-md-8">
-                            <div class="table-responsive">
-                                <table class="table table-bordered">
-                                    <tbody>
-                                        <tr>
-                                            <th width="30%">Nom d'utilisateur</th>
-                                            <td>{{ user.username }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Email</th>
-                                            <td>{{ user.email }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Téléphone</th>
-                                            <td>{{ user.telephone|default:"Non renseigné" }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Date de naissance</th>
-                                            <td>{{ user.date_naissance|date:"d/m/Y"|default:"Non renseignée" }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Adresse</th>
-                                            <td>{{ user.adress|default:"Non renseignée"|linebreaks }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Dernière connexion</th>
-                                            <td>{{ user.last_login|date:"d/m/Y H:i"|default:"Jamais" }}</td>
-                                        </tr>
-                                        <tr>
-                                            <th>Date d'inscription</th>
-                                            <td>{{ user.date_joined|date:"d/m/Y" }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between mt-4">
-                                <a href="{% url 'gestion_users:edit_profile' %}" class="btn btn-primary"><i class="bi bi-pencil-square">Modifier mon profil</i></a>
-                                
-                                {% if user.role == 'STUDENT' %}
-                                        <a href="#" class="btn btn-outline-secondary"> <i class="bi bi-book"></i> Mes formations </a>
-                                    {% elif user.role == 'INSTRUCTOR' %}
-                                        <a href="#" class="btn btn-outline-secondary"> <i class="bi bi-easel">Mes cours</i> </a>
-                                    {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    {% endif %}
+    {# --- Fin de la section messages --- #}
+
+
+    <div class="container py-5"> {# Conteneur principal avec padding vertical #}
+        <div class="row"> {# Ligne principale pour la mise en page en deux colonnes #}
+
+            {# --- Colonne pour la sidebar --- #}
+            <div class="col-md-3">
+                {# Inclut la sidebar spécifique au profil. Le contenu de ce fichier est séparé. #}
+                {# Vous pouvez passer des variables si nécessaire, comme la tab active pour la navigation. #}
+                {% include 'includes/_profile_sidebar.html' with active_tab=active_tab %}
             </div>
-        </div>
-    </div>
-</div>
+            {# --- Fin de la colonne sidebar --- #}
+
+
+            {# --- Colonne principale pour le contenu du profil --- #}
+            <div class="col-md-9">
+                <div class="card shadow-sm"> {# Une carte Bootstrap avec une ombre subtile #}
+
+                    {# En-tête de la carte #}
+                    <div class="card-header bg-primary text-white"> {# Fond bleu Bootstrap, texte blanc #}
+                        {# Utilise la variable titre_page passée par la vue, avec une valeur par défaut #}
+                        <h3 class="mb-0">{{ titre_page|default:"Mon Profil" }}</h3>
+                    </div>
+
+                    {# Corps de la carte (contient toutes les informations du profil) #}
+                    <div class="card-body">
+                        <div class="row"> {# Ligne interne pour la photo et les détails #}
+
+                            {# --- Colonne pour la photo de profil --- #}
+                            <div class="col-md-4 text-center"> {# Colonne de 4 unités, centrée #}
+                                <div class="mb-3">
+                                    {# Affiche la photo de l'utilisateur si le champ 'photo' existe sur le modèle CustomUser ET est renseigné #}
+                                    {# Sinon, affiche une image d'avatar par défaut #}
+                                    {# Assurez-vous que l'image 'default-avatar.png' existe dans votre dossier static/images/ #}
+                                    {# Note : Pour que user.photo.url fonctionne, vous devez avoir un champ ImageField ou FileField nommé 'photo' sur CustomUser #}
+                                    <img src="{% if user.photo and user.photo.url %}{{ user.photo.url }}{% else %}{% static 'images/default-avatar.png' %}{% endif %}"
+                                            class="rounded-circle img-thumbnail" {# Classes Bootstrap pour une image ronde avec bordure #}
+                                            alt="Photo de profil" {# Texte alternatif pour l'accessibilité #}
+                                            style="width: 150px; height: 150px; object-fit: cover;"> {# Style pour taille fixe et recadrage #}
+                                </div>
+                                {# Affiche le nom complet ou le nom d'utilisateur si le nom complet n'est pas renseigné #}
+                                <h4>{{ user.get_full_name|default:user.username }}</h4>
+                                {# Affiche le rôle de l'utilisateur avec un badge Bootstrap coloré selon le rôle #}
+                                <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% elif user.role == 'INSTRUCTOR' %}info{% else %}success{% endif %}">
+                                    {{ user.get_role_display }} {# Utilise get_role_display pour afficher le nom lisible du rôle #}
+                                </span>
+                            </div>
+                            {# --- Fin de la colonne photo --- #}
+
+
+                            {# --- Colonne pour les détails du profil (Infos de base de CustomUser et profils spécifiques) --- #}
+                            <div class="col-md-8"> {# Colonne de 8 unités #}
+
+                                {# --- Section Informations du compte (champs de base CustomUser) --- #}
+                                <h4>Informations du compte</h4>
+                                <div class="table-responsive"> {# Rend le tableau responsive sur petits écrans #}
+                                    <table class="table table-bordered table-striped"> {# Tableau Bootstrap avec bordures et lignes alternées #}
+                                        <tbody>
+                                            <tr>
+                                                <th width="30%">Nom d'utilisateur</th>
+                                                <td>{{ user.username }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Prénom</th> {# Ajout Prénom et Nom si vous les avez retirés du tableau précédent #}
+                                                <td>{{ user.first_name|default:"Non renseigné" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Nom</th>
+                                                <td>{{ user.last_name|default:"Non renseigné" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Email</th>
+                                                <td>{{ user.email }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Téléphone</th>
+                                                <td>{{ user.telephone|default:"Non renseigné" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Date de naissance</th>
+                                                <td>{{ user.date_naissance|date:"d/m/Y"|default:"Non renseignée" }}</td> {# Formatage de la date #}
+                                            </tr>
+                                            <tr>
+                                                <th>Adresse</th>
+                                                <td>{{ user.adress|default:"Non renseignée"|linebreaksbr }}</td> {# linebreaksbr pour convertir les sauts de ligne en <br> #}
+                                            </tr>
+                                            <tr>
+                                                <th>Dernière connexion</th>
+                                                <td>{{ user.last_login|date:"d/m/Y H:i"|default:"Jamais" }}</td> {# Formatage date et heure #}
+                                            </tr>
+                                            <tr>
+                                                <th>Date d'inscription</th>
+                                                <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {# --- Fin Section Informations du compte --- #}
+
+
+                                {# === Section Informations Étudiant (Affichée seulement si student_profile existe) === #}
+                                {% if student_profile %}
+                                    <h4 class="mt-4">Informations Étudiant</h4> {# Marge supérieure pour séparer de la section précédente #}
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <tbody>
+                                                <tr>
+                                                    <th width="30%">Numéro Étudiant</th>
+                                                    <td>{{ student_profile.numero_etudiant|default:"Non renseigné" }}</td> {# Accède au champ numero_etudiant du modèle Student #}
+                                                </tr>
+                                                {# === AJOUTEZ ICI LES AUTRES CHAMPS DU MODÈLE STUDENT QUE VOUS VOULEZ AFFICHER === #}
+                                                {# Exemple : <tr><th>Date d'inscription étudiante</th><td>{{ student_profile.date_inscription|date:"d/m/Y"|default:"Non renseigné" }}</td></tr> #}
+                                                {# Exemple : <tr><th>Statut Étudiant</th><td>{{ student_profile.get_statut_display|default:"Non renseigné" }}</td></tr> #}
+                                                {# ... ajoutez d'autres lignes <tr> pour chaque champ ... #}
+                                                {# === FIN AJOUT CHAMPS STUDENT === #}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    {# Vous pourriez ajouter ici d'autres sections liées à l'étudiant (ses inscriptions, ses notes...) #}
+                                    {# {% if student_profile.enrollments.all %} ... {% endif %} #}
+                                {% endif %}
+                                {# === Fin Section Informations Étudiant === #}
+
+
+                                {# === Section Informations Formateur (Affichée seulement si instructor_profile existe) === #}
+                                {% if instructor_profile %}
+                                    <h4 class="mt-4">Informations Formateur</h4> {# Marge supérieure #}
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped">
+                                            <tbody>
+                                                <tr>
+                                                    <th width="30%">Spécialité d'enseignement</th>
+                                                    <td>{{ instructor_profile.specialite_enseignement|default:"Non renseigné" }}</td> {# Accède au champ specialite_enseignement du modèle Instructor #}
+                                                </tr>
+                                                 {# === AJOUTEZ ICI LES AUTRES CHAMPS DU MODÈLE INSTRUCTOR QUE VOUS VOULEZ AFFICHER === #}
+                                                 {# Exemple : <tr><th>Expérience</th><td>{{ instructor_profile.experience_annees|default:"Non renseigné" }} ans</td></tr> #h}
+                                                 {# Exemple : <tr><th>Bureau</th><td>{{ instructor_profile.bureau|default:"Non renseigné" }}</td></tr> #}
+                                                 {# ... ajoutez d'autres lignes <tr> pour chaque champ ... #}
+                                                {# === FIN AJOUT CHAMPS INSTRUCTOR === #}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                     {# Vous pourriez ajouter ici d'autres sections liées au formateur (sessions enseignées...) #}
+                                     {# {% if instructor_profile.sessions_enseignees.all %} ... {% endif %} #}
+                                {% endif %}
+                                {# === Fin Section Informations Formateur === #}
+
+
+                                {# --- Section des boutons d'action (Éditer, Mes Formations/Cours) --- #}
+                                <div class="d-flex justify-content-between align-items-center mt-4"> {# Alignement horizontal des boutons #}
+                                     {# Bouton pour éditer le profil #}
+                                    <a href="{% url 'gestion_users:edit_profile' %}" class="btn btn-primary">
+                                        <i class="bi bi-pencil-square me-1"></i> Modifier mon profil {# icône Bootstrap avec marge à droite #}
+                                    </a>
+
+                                    {# Boutons conditionnels "Mes formations" (pour étudiant) ou "Mes cours" (pour formateur) #}
+                                    {# Correction des URLs pour pointer vers les nouvelles vues #}
+                                    {% if user.role == 'STUDENT' %}
+                                            <a href="{% url 'gestion_inscriptions:student_enrollments' %}" class="btn btn-outline-secondary"> {# Bouton avec contour gris #}
+                                                 <i class="bi bi-book me-1"></i> Mes formations {# icône Bootstrap livre #}
+                                            </a>
+                                        {% elif user.role == 'INSTRUCTOR' %}
+                                            <a href="{% url 'gestion_inscriptions:instructor_sessions' %}" class="btn btn-outline-secondary">
+                                                 <i class="bi bi-easel me-1"></i> Mes cours {# icône Bootstrap tableau #}
+                                            </a>
+                                        {% endif %}
+                                </div>
+                                {# --- Fin Section boutons d'action --- #}
+
+                            </div> {# Fin col-md-8 pour les détails #}
+                        </div> {# Fin row interne (photo + détails) #}
+                    </div> {# Fin card-body #}
+                </div> {# Fin card #}
+            </div> {# Fin col-md-9 pour le contenu principal #}
+        </div> {# Fin row principale (sidebar + contenu) #}
+    </div> {# Fin container principal #}
+
 {% endblock %}
+{# ==================== Fin du contenu principal de la page ==================== #}
+
+{# Rappel des dépendances : #}
+{# Ce template étend base.html. #}
+{# Votre vue profile_view doit passer dans le contexte : user, student_profile, instructor_profile, titre_page, active_tab. #}
+{# Le fichier includes/_profile_sidebar.html doit exister. #}
+{# Les fichiers statiques comme images/default-avatar.png doivent être collectables. #}
+{# Bootstrap CSS/JS et Bootstrap Icons CSS doivent être inclus dans base.html ou ses includes. #}
+{# Les URLs nommées utilisées ({% url '...' %}) doivent être définies dans vos urls.py. #}
+{# Si user.photo n'existe pas, retirez la condition if user.photo and user.photo.url #}

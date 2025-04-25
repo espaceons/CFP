@@ -16,7 +16,7 @@ class EvaluationType(models.Model):
     """
     nom = models.CharField(max_length=100, unique=True, verbose_name=_("Nom du type d'évaluation"))
     description = models.TextField(blank=True, null=True, verbose_name=_("Description"))
-    # Vous pourriez ajouter un champ pour le poids par défaut de ce type d'évaluation
+    # Vous pourriez ajouter un champ pour le poids par défaut de ce type d'évaluation(sur 20)
     # poids_par_defaut = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('1.0'), verbose_name=_("Poids par défaut"))
 
 
