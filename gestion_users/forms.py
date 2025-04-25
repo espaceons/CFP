@@ -77,6 +77,7 @@ class CustomUserCreationForm(UserCreationForm):
             'adress',
             'date_naissance',
             'photo', # <-- AJOUTEZ LE CHAMP PHOTO ICI pour le formulaire d'inscription
+            'role', # <-- AJOUTEZ LE CHAMP ROLE ICI dans Meta.fields
         )
         # --- Fin des champs ---
 
@@ -87,8 +88,25 @@ class CustomUserCreationForm(UserCreationForm):
         }
         labels = {
              'photo': 'Photo de profil', # Label pour le champ photo
+             'role': 'Je suis un(e)', # Label personnalisé pour le rôle
              # Ajoutez des labels pour les autres champs si vous voulez personnaliser #
          }
+        
+        # --- DÉFINISSEZ LA MÉTHODE __init__ POUR LIMITER LES CHOIX DU CHAMP ROLE ---
+        def __init__(self, *args, **kwargs):
+            # Appelle la méthode __init__ de la classe parente (UserCreationForm)
+            super().__init__(*args, **kwargs)
+
+            # --- Limite les choix du champ 'role' ---
+            # Accède au champ 'role' dans les champs du formulaire ('self.fields')
+            # Définit ses choix en utilisant les choix définis dans le modèle CustomUser.UserRole,
+            # mais en n'incluant que les rôles souhaités pour l'inscription publique.
+            self.fields['role'].choices = [
+                (CustomUser.UserRole.STUDENT, CustomUser.UserRole.STUDENT.label),
+                (CustomUser.UserRole.INSTRUCTOR, CustomUser.UserRole.INSTRUCTOR.label),
+                # N'incluez PAS CustomUser.UserRole.ADMIN ici pour la sécurité
+            ]
+            # --- Fin limitation des choix ---
 
 
     # Optionnel : Vous pouvez override la méthode save si vous avez besoin de logique supplémentaire
