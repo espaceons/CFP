@@ -1,7 +1,7 @@
 # gestion_users/forms.py
 
 from django import forms
-from .models import CustomUser # Importe votre modèle utilisateur personnalisé
+from .models import CustomUser, UserRole # Importe votre modèle utilisateur personnalisé
 
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.utils.translation import gettext_lazy as _
@@ -76,8 +76,8 @@ class CustomUserCreationForm(UserCreationForm):
             'telephone',
             'adress',
             'date_naissance',
-            'photo', # <-- AJOUTEZ LE CHAMP PHOTO ICI pour le formulaire d'inscription
-            'role', # <-- AJOUTEZ LE CHAMP ROLE ICI dans Meta.fields
+            'photo', # <-- PHOTO ICI pour le formulaire d'inscription
+            'role', # <-- CHAMP ROLE ICI dans Meta.fields
         )
         # --- Fin des champs ---
 
@@ -117,3 +117,35 @@ class CustomUserCreationForm(UserCreationForm):
     #     if commit:
     #         user.save() # Sauvegarde l'objet user, y compris le fichier photo si présent
     #     return user
+    
+    
+    
+# formulaire de creation formateur a partir de creation de session pour une formation:
+#-------------------------------------------------------------------------------------
+  
+class FormateurCreationForm(UserCreationForm):
+    """
+    Formulaire spécialisé pour créer un formateur (utilisateur avec rôle INSTRUCTOR)
+    Hérite de UserCreationForm pour gérer proprement le mot de passe
+    """
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'password1', 'password2', 
+                 'first_name', 'last_name', 'email', 
+                 'telephone', 'adress', 'date_naissance', 'photo', 'role']
+        widgets = {
+            'date_naissance': forms.DateInput(attrs={'type': 'date'}),
+            'adress': forms.Textarea(attrs={'rows': 4}),
+            'role': forms.HiddenInput(),  # On cache le champ car il est défini automatiquement
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['role'].initial = UserRole.INSTRUCTOR
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.role = UserRole.INSTRUCTOR
+        if commit:
+            user.save()
+        return user

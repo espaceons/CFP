@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h4><i class="fas fa-exclamation-triangle"></i> Confirmer la suppression</h4>
+        </div>
+        <div class="card-body">
+            <h5>Êtes-vous sûr de vouloir supprimer cette séance ?</h5>
+            <p class="mb-4">
+                <strong>Séance du :</strong> {{ seance.date|date:"l d F Y" }}<br>
+                <strong>Horaire :</strong> {{ seance.heure_debut|time:"H:i" }} - {{ seance.heure_fin|time:"H:i" }}<br>
+                <strong>Sujet :</strong> {{ seance.sujet_aborde|default:"Non spécifié" }}<br>
+                <strong>Session :</strong> {{ seance.session.nom_session }}
+            </p>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'gestion_formations:session_detail' pk=seance.session.pk %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Annuler
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> Confirmer la suppression
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

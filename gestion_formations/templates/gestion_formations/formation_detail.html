@@ -1,43 +1,63 @@
-{# gestion_formations/templates/gestion_formations/formation_detail.html #}
-
-{% extends 'base.html' %} {# Hérite de base.html #}
-
-{# Utilise le nom de la formation pour le titre de la page #}
-{% block title %}{{ formation.nom }} - Détail{% endblock %}
+{% extends 'base.html' %}
 
 {% block content %}
-    <h1>{{ formation.nom }}</h1>
+<div class="container mt-4">
 
-    <p>{{ formation.description|linebreaksbr }}</p> {# Affiche la description en conservant les sauts de ligne #}
-    <p>Durée estimée : {{ formation.duree_heures|default:"Non spécifié" }} heures</p>
-    <p>Objectifs : {{ formation.objectifs|linebreaksbr|default:"Non spécifié" }}</p>
-    <p>Prérequis : {{ formation.prerequis|linebreaksbr|default:"Non spécifié" }}</p>
+  <h2>{{ formation.nom }}</h2>
 
-    {# Vous pouvez ajouter d'autres détails de la formation ici #}
+  <p><strong>Description :</strong> {{ formation.description }}</p>
+  <p><strong>Objectifs :</strong> {{ formation.objectifs }}</p>
+  <p><strong>Prérequis :</strong> {{ formation.prerequis }}</p>
+  <p><strong>Durée :</strong> {{ formation.duree_heures }} heures</p>
 
-    <h2>Sessions disponibles pour cette formation :</h2>
+  <hr>
 
-    {% if formation.sessions.all %} {# Accède aux sessions liées grâce au related_name='sessions' sur le ForeignKey Session.formation #}
-        <ul>
-            {% for session in formation.sessions.all %}
-                <li>
-                    <h3>{{ session.nom_session }}</h3>
-                    <p>Période : Du {{ session.date_debut_session|date:"d/m/Y" }} au {{ session.date_fin_session|date:"d/m/Y" }}</p>
-                    <p>Lieu principal : {{ session.lieu|default:"Non spécifié" }}</p>
-                    <p>Capacité max : {{ session.capacite_max }}</p>
-                    <p>Formateur principal : {% if session.instructor_principal %}{{ session.instructor_principal.user.get_full_name }}{% else %}Non assigné{% endif %}</p>
-                    
-                    <p>Inscrits : {{ session.enrollments.count }} / {{ session.capacite_max }}</p> {# Compte le nombre d'inscrits #}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>Sessions associées</h4>
 
-                    {# Plus tard, ajouter un lien vers le détail de la session ou la liste des séances #}
-                    {# <p><a href="{% url 'gestion_formations:session_detail' session.pk %}">Voir les séances</a></p> #}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Aucune session n'est planifiée pour cette formation pour le moment.</p>
-    {% endif %}
+    <!-- ➕ Bouton pour ajouter une nouvelle session -->
+    <a href="{% url 'gestion_formations:session_add_to_formation' formation.pk %}" class="btn btn-success">
+      ➕ Ajouter une Session
+    </a>
+  </div>
 
-    <p><a href="{% url 'gestion_formations:list' %}">Retour à la liste des formations</a></p>
+  <!-- Tableau des sessions -->
+  {% if sessions %}
+    <div class="table-responsive">
+      <table class="table table-bordered table-striped align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Titre</th>
+            <th>Statut</th>
+            <th>Date de début</th>
+            <th>Date de fin</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for session in sessions %}
+          <tr>
+            <td>{{ session.titre }}</td>
+            <td>{{ session.get_statut_display }}</td>
+            <td>{{ session.date_debut|date:"d/m/Y" }}</td>
+            <td>{{ session.date_fin|date:"d/m/Y" }}</td>
+            <td>
+              <!-- Boutons Modifier / Supprimer -->
+              <a href="{% url 'gestion_formations:session_update' session.pk %}" class="btn btn-sm btn-primary">
+                ✏️ Modifier
+              </a>
+              <a href="{% url 'gestion_formations:session_delete' session.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Confirmer la suppression de cette session ?');">
+                🗑️ Supprimer
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">Aucune session disponible pour cette formation.</p>
+  {% endif %}
 
+</div>
 {% endblock %}

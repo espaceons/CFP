@@ -17,7 +17,7 @@
            class="list-group-item list-group-item-action {% if active_tab == 'profile' %}active{% endif %}"><i class="bi bi-person-lines-fill me-2"> Vue d'ensemble</i> </a>
         <a href="{% url 'gestion_users:edit_profile' %}" class="list-group-item list-group-item-action {% if active_tab == 'edit' %}active{% endif %}">
             <i class="bi bi-pencil-square me-2"></i> Modifier profil</a>
-        <a href="#" class="list-group-item list-group-item-action"><i class="bi bi-lock me-2"> Changer mot de passe</i> </a>
+        <!--<a href="#" class="list-group-item list-group-item-action"><i class="bi bi-lock me-2"> Changer mot de passe</i> </a>-->
         
         {% if user.role == 'STUDENT' %}
             <a href="#" class="list-group-item list-group-item-action"><i class="bi bi-book me-2"> Mes formations</i></a>

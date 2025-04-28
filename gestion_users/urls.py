@@ -17,13 +17,13 @@ urlpatterns = [
     
     # URLs pour la réinitialisation de mot de passe (vues intégrées de Django)
     # Ces vues attendent des templates spécifiques dans le sous-répertoire 'registration'
-    path('password_reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html'), name='password_reset'), # <--- C'est le nom d'URL que {% url %} recherche !
+    #path('password_reset/', auth_views.PasswordResetView.as_view(template_name='registration/password_reset_form.html'), name='password_reset'), # <--- C'est le nom d'URL que {% url %} recherche !
 
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
+    #path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),
 
-    path('reset/<uidb64>/<token>/',auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'), name='password_reset_confirm'),# Capture l'identifiant de l'utilisateur et le jeton
+    #path('reset/<uidb64>/<token>/',auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm.html'), name='password_reset_confirm'),# Capture l'identifiant de l'utilisateur et le jeton
 
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
+    #path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete.html'), name='password_reset_complete'),
 
     # URL pour la page de profil de l'utilisateur connecté
     path('profile/', views.profile_view, name='profile'),

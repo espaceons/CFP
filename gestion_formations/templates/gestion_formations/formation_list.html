@@ -1,36 +1,44 @@
-{# gestion_formations/templates/gestion_formations/formation_list.html #}
+{% extends 'base.html' %}
 
-{% extends 'base.html' %} {# Indique qu'il hérite de base.html #}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Liste des Formations Disponibles</h2>
+    <div>
+      <a href="{% url 'gestion_formations:formation_create' %}" class="btn btn-success me-2">➕ Ajouter une formation</a>
+      <a href="{% url 'gestion_formations:formation_inactive_list' %}" class="btn btn-outline-warning">📂 Formations non actives</a>
+      <a href="{% url 'gestion_formations:formation_list' %}" class="btn btn-outline-info">📂 Formations actives</a>
+    </div>
+  </div>
 
-{% block title %}{{ titre_page }} - Mon Centre{% endblock %} {# Surcharge le bloc titre de base.html #}
-
-{% block content %} {# Remplit le bloc content défini dans base.html #}
-    <h1>{{ titre_page }}</h1>
-
-    {% if formations %}
-        <ul>
-            {% for formation in formations %}
-                <li>
-                    <h2>{{ formation.nom }}</h2>
-                    <p>{{ formation.description|truncatechars:200 }}</p>
-                    <p>Durée estimée : {{ formation.duree_heures|default:"Non spécifié" }} heures</p>
-                    {# Lien vers la page de détail (nous la créerons ensuite) #}
-                    <p><a href="{% url 'gestion_formations:detail' formation.pk %}">Voir détails et sessions</a></p>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>Aucune formation active n'est disponible pour le moment.</p>
-    {% endif %}
-
+  <!-- Ici ton tableau de formations par exemple -->
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Durée (heures)</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for formation in formations %}
+      <tr>
+        <td>{{ formation.nom }}</td>
+        <td>{{ formation.duree_heures }}</td>
+        <td>{% if formation.est_active %}✅{% else %}❌{% endif %}</td>
+        <td>
+          <a href="{% url 'gestion_formations:formation_detail' formation.pk %}" class="btn btn-primary btn-sm">Détails</a>
+          <a href="{% url 'gestion_formations:formation_update' formation.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+          <a href="{% url 'gestion_formations:formation_delete' formation.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4" class="text-center">Aucune formation trouvée.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
-
-{# Exemple si vous vouliez ajouter un script spécifique juste pour cette page #}
-{# {% block extra_scripts %} #}
-{# <script>alert("Bienvenue sur la liste des formations!");</script> #}
-{# {% endblock %} #}
-
-{# Exemple si vous vouliez ajouter quelque chose dans le head spécifique à cette page #}
-{# {% block extra_head %} #}
-{# <meta name="keywords" content="formations, cours, centre"> #}
-{# {% endblock %} #}

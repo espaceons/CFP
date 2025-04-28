@@ -106,7 +106,7 @@
                         <div class="mt-3 text-center">
                             {# Lien vers la page de réinitialisation de mot de passe (si implémentée) #}
                             {# Assurez-vous que l'URL 'gestion_users:password_reset' existe dans urls.py #}
-                            <a href="{% url 'gestion_users:password_reset' %}">Mot de passe oublié ?</a>
+                            {#<a href="{% url 'gestion_users:password_reset' %}">Mot de passe oublié ?</a>#}
 
                             {# Séparateur conditionnel #}
                             {% if not settings.SSO_ENABLED %}
