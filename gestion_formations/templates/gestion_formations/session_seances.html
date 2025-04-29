@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Séances pour la session : {{ session.nom_session }}</h2>
+
+<div id='calendar'></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    initialView: 'dayGridMonth',
+    events: {
+      url: "{% url 'gestion_formations:calendar' %}",
+      extraParams: {
+        session: "{{ session.id }}"
+      }
+    },
+    eventClick: function(info) {
+      window.location.href = info.event.url;
+    }
+  });
+  calendar.render();
+});
+</script>
+{% endblock %}

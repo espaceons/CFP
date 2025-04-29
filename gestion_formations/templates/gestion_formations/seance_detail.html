@@ -1,3 +1,4 @@
+{# seance_detail.html - CODE CORRIGÉ #}
 {% extends 'base.html' %}
 
 {% block content %}
@@ -7,10 +8,12 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h4>Détails de la séance</h4>
                 <div>
-                    <a href="{% url 'gestion_formations:seance_update' pk=seance.pk %}" class="btn btn-sm btn-light me-2">
+                    {# CORRECTION ICI : Ajout de session_pk=seance.session.pk #}
+                    <a href="{% url 'gestion_formations:seance_update' session_pk=seance.session.pk pk=seance.pk %}" class="btn btn-sm btn-light me-2">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
-                    <a href="{% url 'gestion_formations:seance_delete' pk=seance.pk %}" class="btn btn-sm btn-danger">
+                    {# CORRECTION ICI : Ajout de session_pk=seance.session.pk #}
+                    <a href="{% url 'gestion_formations:seance_delete' session_pk=seance.session.pk pk=seance.pk %}" class="btn btn-sm btn-danger">
                         <i class="fas fa-trash-alt"></i> Supprimer
                     </a>
                 </div>
@@ -23,46 +26,51 @@
                     <p>
                         <strong>Date :</strong> {{ seance.date|date:"l d F Y" }}<br>
                         <strong>Horaire :</strong> {{ seance.heure_debut|time:"H:i" }} - {{ seance.heure_fin|time:"H:i" }}<br>
+                        {# Assurez-vous d'avoir une propriété ou une méthode 'duree' sur votre modèle Seance #}
                         <strong>Durée :</strong> {{ seance.duree }} heures<br>
-                        <strong>Statut :</strong> 
+                        <strong>Statut :</strong>
                         <span class="badge {% if seance.est_annulee %}bg-danger{% else %}bg-success{% endif %}">
                             {% if seance.est_annulee %}Annulée{% else %}Active{% endif %}
                         </span>
                     </p>
-                    
+
                     <h5 class="mt-4">Formation</h5>
                     <p>
-                        <strong>Session :</strong> 
+                        <strong>Session :</strong>
                         <a href="{% url 'gestion_formations:session_detail' pk=seance.session.pk %}">
-                            {{ seance.session.nom_session }}
+                             {{ seance.session.nom_session }}
                         </a><br>
                         <strong>Formation :</strong> {{ seance.session.formation.nom }}<br>
-                        <strong>Formateur :</strong> 
+                        <strong>Formateur :</strong>
                         {% if seance.instructor %}
-                            {{ seance.instructor.get_full_name }}
+                             {{ seance.instructor.get_full_name }} {# Supposant que l'objet instructor a une méthode get_full_name ou est un CustomUser #}
                         {% else %}
-                            {{ seance.session.instructor_principal.get_full_name|default:"Non assigné" }}
+                             {{ seance.session.instructor_principal.get_full_name|default:"Non assigné" }} {# Supposant une relation user sur Instructor et get_full_name sur CustomUser #}
                         {% endif %}
                     </p>
                 </div>
-                
+
                 <div class="col-md-6">
                     <h5>Détails complémentaires</h5>
                     <p>
+                        {# Utilise le lieu_seance s'il existe, sinon le lieu de la session #}
                         <strong>Lieu :</strong> {{ seance.lieu_seance|default:seance.session.lieu }}<br>
                         <strong>Sujet abordé :</strong> {{ seance.sujet_aborde|default:"Non spécifié" }}<br>
-                        <strong>Créée par :</strong> {{ seance.created_by.get_full_name|default:"Système" }}<br>
+                        {# Assurez-vous d'avoir un champ 'created_by' sur votre modèle Seance #}
+                        <strong>Créée par :</strong> {{ seance.created_by.get_full_name|default:"Système" }}<br> {# Supposant get_full_name sur le champ created_by (CustomUser) #}
+                        {# Assurez-vous d'avoir un champ 'updated_at' sur votre modèle Seance #}
                         <strong>Dernière modification :</strong> {{ seance.updated_at|date:"d/m/Y H:i"|default:"-" }}
                     </p>
-                    
+
                     <h5 class="mt-4">Notes</h5>
                     <div class="border p-3 bg-light">
                         {{ seance.note_seance|default:"Aucune note pour cette séance."|linebreaks }}
                     </div>
                 </div>
             </div>
-            
+
             <div class="mt-4">
+                {# Le lien de retour était déjà correct #}
                 <a href="{% url 'gestion_formations:session_detail' pk=seance.session.pk %}" class="btn btn-primary">
                     <i class="fas fa-arrow-left"></i> Retour à la session
                 </a>

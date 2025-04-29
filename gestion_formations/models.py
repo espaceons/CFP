@@ -10,6 +10,8 @@ from datetime import datetime, time
 from gestion_users.models import CustomUser
 # liaison des sessions et potentiellement les séances à un formateur
 
+# Formation:
+#-----------
 
 class Formation(models.Model): # cours
     """
@@ -29,6 +31,8 @@ class Formation(models.Model): # cours
     def __str__(self):
         return self.nom
 
+# Session Status:
+#----------------
 
 class SessionStatus(models.TextChoices):
     PLANNED = 'PLANNED', _('Planifiée')
@@ -37,6 +41,8 @@ class SessionStatus(models.TextChoices):
     COMPLETED = 'COMPLETED', _('Terminée')
     CANCELLED = 'CANCELLED', _('Annulée')
     
+# Session:
+#--------
     
 class Session(models.Model):
     """
@@ -71,7 +77,21 @@ class Session(models.Model):
     def __str__(self):
         return f"{self.nom_session} ({self.formation.nom})"
 
-# Nouveau modèle pour les séances individuelles
+# salle Room:
+#-----------
+   
+class Room(models.Model):
+    name = models.CharField(max_length=100)
+    capacity = models.PositiveIntegerField()
+    equipment = models.TextField(blank=True)
+    
+    def __str__(self):
+        return self.name
+    
+    
+# Séances:
+#---------
+
 class Seance(models.Model):
     """
     Modèle représentant une séance spécifique au sein d'une session.
@@ -100,11 +120,13 @@ class Seance(models.Model):
         verbose_name=_("Formateur de la séance")
     )
     
-    lieu_seance = models.CharField(
-        max_length=255,
-        blank=True,
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.SET_NULL, # Quand une salle est supprimée, ne supprime pas les séances, met le champ à NULL
         null=True,
-        verbose_name=_("Lieu de la séance")
+        blank=True,
+        related_name='seances', # Permet d'accéder aux séances dans une salle (room.seances.all())
+        verbose_name=_("Salle")
     )
 
     sujet_aborde = models.CharField(
@@ -256,3 +278,4 @@ class Seance(models.Model):
                 conflits['lieu'] = conflit_lieu.first()
 
         return conflits
+    

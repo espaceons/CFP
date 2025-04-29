@@ -1,3 +1,5 @@
+
+{# session_form.html #}
 {% extends 'base.html' %}
 
 {% block content %}
@@ -47,8 +49,7 @@
                             {{ form.instructor_principal.errors }}
                         </div>
                     {% endif %}
-                    <!-- Lien pour ajouter un nouveau formateur -->
-                    <a href="{% url 'gestion_formations:ajouter_formateur' %}" class="btn btn-secondary mt-2">Ajouter un nouveau formateur</a>
+                    
                 </div>
             </div>
             

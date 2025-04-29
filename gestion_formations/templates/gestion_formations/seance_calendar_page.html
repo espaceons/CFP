@@ -1,0 +1,96 @@
+{# dans ce fichier que vous allez mettre la structure HTML et le code JavaScript pour afficher le calendrier.#}
+{# Vous aurez besoin d'inclure les fichiers CSS et JS de la bibliothèque FullCalendar (ou une autre de votre choix).#}
+{#Le plus simple pour commencer est d'utiliser les CDN (Content Delivery Network).#}
+
+{% extends 'base.html' %} {# Adaptez le nom de votre template de base #}
+{% load static %} {# Pour charger des fichiers statiques si vous ne les utilisez pas via CDN #}
+
+{% block title %}{{ titre_page }}{% endblock %}
+
+{% block extra_css %}
+    {# Inclure le CSS de FullCalendar #}
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css' rel='stylesheet' />
+    {# Optionnel : Ajoutez votre propre CSS si nécessaire #}
+    <style>
+        body {
+            margin: 40px 10px;
+            padding: 0;
+            font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+            font-size: 14px;
+        }
+        #calendar {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h1>{{ titre_page }}</h1>
+
+    {# L'élément HTML où le calendrier sera rendu #}
+    <div id='calendar'></div>
+
+{% endblock %}
+
+{% block extra_js %}
+    {# Inclure le JavaScript de FullCalendar #}
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    {# Inclure la locale française si vous voulez le calendrier en français #}
+    <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core/locales/fr.global.min.js'></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth', // Vue initiale (mois, semaine, jour)
+                locale: 'fr', // Utiliser la locale française
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay' // Boutons pour changer de vue
+                },
+                // Configuration de la source des événements
+                events: {
+                    // L'URL de votre CalendarView qui retourne les données JSON
+                    url: '{% url "gestion_formations:calendar_data" %}',
+                    // FullCalendar passe automatiquement 'start' et 'end' (les dates visibles)
+                    // que vous pouvez utiliser dans votre CalendarView (date__gte=start, date__lte=end)
+                    // Cependant, votre vue filtre déjà par mois/année via GET['month'] et GET['year'],
+                    // ce qui est aussi une approche valide et simple. FullCalendar passera ces paramètres
+                    // si vous les configurez ou si votre CalendarView s'attend aux paramètres 'start' et 'end'.
+                    // Votre vue actuelle s'attend à 'month' et 'year', donc vous devrez peut-être
+                    // ajuster le code JS ou la vue pour qu'ils s'accordent sur les noms des paramètres.
+                    // Simplification : Utilisons 'month' et 'year' côté JS aussi pour correspondre à votre vue.
+                     extraParams: function() {
+                        // Envoie le mois et l'année courants au serveur
+                        return {
+                            month: calendar.getDate().getMonth() + 1, // Mois est 0-indexed en JS, 1-indexed en Django
+                            year: calendar.getDate().getFullYear()
+                        };
+                    }
+                },
+                eventClick: function(info) {
+                    // Gère le clic sur un événement
+                    if (info.event.url) {
+                        // Ouvre l'URL de l'événement dans un nouvel onglet
+                        window.open(info.event.url);
+                        // Empêche le comportement par défaut (qui est la navigation)
+                        info.jsEvent.preventDefault();
+                    }
+                },
+                
+            });
+
+            calendar.render(); // Affiche le calendrier
+
+            // Ajoutez des listeners si votre CalendarView attend d'autres paramètres que start/end
+            // comme month et year, et que vous voulez recharger les événements quand l'utilisateur navigue.
+            // Votre CalendarView attend déjà month/year, donc ajustons la source d'événements JS.
+            // L'option 'extraParams' dans 'events' gère déjà ça pour chaque requête.
+            // Si vous avez corrigé la CalendarView pour utiliser 'start' et 'end' de FullCalendar,
+            // alors vous n'avez pas besoin de 'extraParams'.
+
+        });
+    </script>
+{% endblock %}

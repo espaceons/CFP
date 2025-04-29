@@ -1,0 +1,62 @@
+{# gestion_formations/templates/gestion_formations/seance_formset.html #}
+{% extends 'base.html' %} {# Adaptez si nécessaire #}
+{% load crispy_forms_tags %} {# Optionnel, si vous utilisez crispy-forms #}
+
+{% block title %}{{ titre_page }}{% endblock %}
+
+{% block content %}
+    <h1>{{ titre_page }}</h1>
+    <p>Session : {{ session.nom_session }} ({{ session.formation.nom }})</p>
+
+    <form method="post">
+        {% csrf_token %}
+        {# Le management form est OBLIGATOIRE pour les formsets #}
+        {{ formset.management_form }}
+
+        {# Affiche les erreurs globales du formset (non liées à un champ spécifique) #}
+        {% if formset.non_form_errors %}
+            <div class="alert alert-danger">
+                <p>Erreurs globales du formulaire :</p>
+                <ul>
+                {% for error in formset.non_form_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {# Boucle sur chaque formulaire dans le formset #}
+        {# Le formset inclut les formulaires pour les objets existants (si queryset non vide) + les formulaires 'extra' #}
+        {% for form in formset %}
+            <div class="seance-form mb-4 p-3 border rounded">
+                <h3>Séance #{{ forloop.counter }}</h3> {# Affiche le numéro du formulaire (1, 2, 3...) #}
+                {# Affiche les erreurs spécifiques à ce formulaire individuel #}
+                {% if form.errors %}
+                    <div class="alert alert-warning">
+                        <p>Erreurs pour cette séance :</p>
+                        {{ form.errors }} {# Affiche les erreurs de ce formulaire #}
+                    </div>
+                {% endif %}
+                {# Affiche les champs du formulaire #}
+                {# Utilisez {{ form|crispy }} si vous avez crispy-forms #}
+                {{ form.as_p }} {# Alternative simple si pas de crispy-forms #}
+
+                {# Si can_delete=True dans le formset, le formulaire aura un champ DELETE caché ou une case à cocher #}
+                {# Ici, avec can_delete=False, ce bloc n'est pas nécessaire #}
+                {# {% if formset.can_delete %} #}
+                {#    <p>{{ form.DELETE }} Supprimer cette séance</p> #}
+                {# {% endif %} #}
+            </div>
+        {% endfor %}
+
+        {# Bouton de soumission #}
+        <button type="submit" class="btn btn-primary">Enregistrer les séances</button>
+
+        {# Lien de retour #}
+        <div class="mt-3">
+             <a href="{% url 'gestion_formations:session_detail' pk=session.pk %}" class="btn btn-secondary">Annuler</a>
+        </div>
+
+    </form>
+
+{% endblock %}

@@ -236,38 +236,3 @@ def edit_profile_view(request):
 
     # Rendre le template edit_profile.html avec le formulaire
     return render(request, 'gestion_users/edit_profile.html', context)
-
-
-
-
-
-
-# creee un Formateur directement pour l'utiliser dans les session:
-#-----------------------------------------------------------------
-
-class FormateurCreationForm(forms.ModelForm):
-    """
-    Formulaire pour créer un nouvel utilisateur avec le rôle 'Formateur'.
-    """
-
-    class Meta:
-        model = CustomUser
-        fields = ['first_name', 'last_name', 'email', 'telephone', 'adress', 'date_naissance', 'photo']
-
-        widgets = {
-            'date_naissance': forms.DateInput(attrs={'type': 'date'}),
-            'adress': forms.Textarea(attrs={'rows': 4}),
-        }
-
-    # Assurez-vous que le rôle est bien défini comme 'INSTRUCTOR' au moment de la création
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['role'].initial = UserRole.INSTRUCTOR
-        self.fields['role'].disabled = True  # Désactive la modification du rôle dans le formulaire
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.role = UserRole.INSTRUCTOR  # Attribuer le rôle 'INSTRUCTOR'
-        if commit:
-            user.save()
-        return user
