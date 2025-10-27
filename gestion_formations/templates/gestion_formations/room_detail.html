@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Détails de la Salle : {{ room.name }}</h2>
+      <div>
+        <a href="{% url 'gestion_formations:room_update' pk=room.pk %}" class="btn btn-info text-white me-2"><i class="fas fa-edit"></i> Modifier</a>
+        <a href="{% url 'gestion_formations:room_delete' pk=room.pk %}" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Supprimer</a>
+      </div>
+    </div>
+
+    <div class="card p-4 shadow-sm">
+      <dl class="row">
+        <dt class="col-sm-3">Nom :</dt>
+        <dd class="col-sm-9">{{ room.name }}</dd>
+
+        <dt class="col-sm-3">Capacité :</dt>
+        <dd class="col-sm-9">{{ room.capacite }} personnes</dd>
+
+        <dt class="col-sm-3">Localisation :</dt>
+        <dd class="col-sm-9">{{ room.localisation|default:'Non spécifiée' }}</dd>
+
+        <dt class="col-sm-3">Équipements :</dt>
+        <dd class="col-sm-9">{{ room.equipements|default:'Aucun équipement listé' }}</dd>
+      </dl>
+    </div>
+
+    <h4 class="mt-5">Sessions Actuelles dans cette Salle</h4>
+    <div class="alert alert-warning">Logique d'affichage des séances futures (nécessite une requête supplémentaire)</div>
+
+    <a href="{% url 'gestion_formations:room_list' %}" class="btn btn-secondary mt-4">Retour à la liste des Salles</a>
+  </div>
+{% endblock %}

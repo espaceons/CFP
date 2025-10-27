@@ -1,0 +1,38 @@
+{% extends 'base.html' %} {% block content %}
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Liste des Salles de Classe</h2>
+      <a href="{% url 'gestion_formations:room_create' %}" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Ajouter une Salle</a>
+    </div>
+
+    {% if rooms %}
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Capacité</th>
+            <th>Localisation</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for room in rooms %}
+            <tr>
+              <td>
+                <a href="{% url 'gestion_formations:room_detail' pk=room.pk %}">{{ room.name }}</a>
+              </td>
+              <td>{{ room.capacite }}</td>
+              <td>{{ room.localisation|default:'Non spécifiée' }}</td>
+              <td>
+                <a href="{% url 'gestion_formations:room_update' pk=room.pk %}" class="btn btn-sm btn-info text-white me-2" title="Modifier"><i class="fas fa-edit"></i>Modifer</a>
+                <a href="{% url 'gestion_formations:room_delete' pk=room.pk %}" class="btn btn-sm btn-danger" title="Supprimer"><i class="fas fa-trash-alt"></i>Supprimer</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="alert alert-info" role="alert">Aucune salle n'est enregistrée pour le moment.</div>
+    {% endif %}
+  </div>
+{% endblock %}

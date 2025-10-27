@@ -1,26 +1,76 @@
 # gestion_formations/forms.py
 
 from django import forms
-from django.utils import timezone
+# Import de gettext_lazy pour les messages d'erreur
+from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
+from django.db.models import Q
+from django.forms import inlineformset_factory, modelformset_factory
+from django.shortcuts import get_object_or_404
 
+# Assurez-vous que tous les modèles sont bien importés
 from gestion_users.models import CustomUser, UserRole
 from .models import Formation, Room, Seance, Session
-from gestion_inscriptions.models import Instructor
-from django.db.models import Q
-from django.forms import modelformset_factory
-from django.shortcuts import  get_object_or_404
+# from gestion_inscriptions.models import Instructor # Si Instructor est un modèle séparé, assurez-vous de son utilité
 
-# formulaire de la formation :
-#-----------------------------
 
+# --- Fonction utilitaire pour trouver les salles disponibles (DOIT être définie AVANT SeanceForm) ---
+def get_available_rooms_for_seance(session_id, seance_date, seance_heure_debut, seance_heure_fin, current_seance_id=None):
+    """
+    Retourne un queryset des salles disponibles pour un créneau horaire donné,
+    en tenant compte des réservations existantes, de la capacité requise et des indisponibilités.
+    """
+    try:
+        session = Session.objects.get(pk=session_id)
+        capacite_requise = session.capacite_max
+    except Session.DoesNotExist:
+        # La session n'existe pas, aucune salle n'est possible
+        return Room.objects.none()
+
+    # 1. Trouver les séances qui se chevauchent à la même date
+    # Condition de chevauchement : Début < Fin_Autre ET Fin > Début_Autre
+    overlapping_seances = Seance.objects.filter(
+        date=seance_date
+    ).filter(
+        Q(heure_debut__lt=seance_heure_fin) & Q(
+            heure_fin__gt=seance_heure_debut)
+    )
+
+    # Exclure la séance en cours de modification
+    if current_seance_id:
+        overlapping_seances = overlapping_seances.exclude(pk=current_seance_id)
+
+    # Obtenir les IDs des salles occupées par chevauchement
+    booked_room_ids = overlapping_seances.exclude(
+        room__isnull=True
+    ).values_list('room', flat=True).distinct()
+
+    # 2. Trouver les IDs des salles en indisponibilité administrative
+    # NOTE: Cette logique dépend du modèle IndisponibiliteSalle dans models.py
+    unavailable_room_ids = Room.objects.filter(
+        indisponibilites__date_debut__lte=seance_date,  # Début <= date de la séance
+        indisponibilites__date_fin__gte=seance_date      # Fin >= date de la séance
+    ).values_list('pk', flat=True).distinct()
+
+    # 3. Filtrer les salles disponibles
+    available_rooms_queryset = Room.objects.filter(
+        capacite__gte=capacite_requise  # Filtre par capacité
+    ).exclude(
+        pk__in=booked_room_ids  # Exclure les salles occupées par chevauchement
+    ).exclude(
+        pk__in=unavailable_room_ids  # Exclure les salles en indisponibilité
+    )
+
+    return available_rooms_queryset
+
+
+# --- Formulaire de la formation ---
 class FormationForm(forms.ModelForm):
-    """
-    Formulaire pour créer ou mettre à jour une formation.
-    """
+    """Formulaire pour créer ou mettre à jour une formation."""
     class Meta:
         model = Formation
         fields = '__all__'
+        # ... (widgets restent identiques) ...
         widgets = {
             'nom': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
@@ -29,14 +79,11 @@ class FormationForm(forms.ModelForm):
             'duree_heures': forms.NumberInput(attrs={'class': 'form-control'}),
             'est_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-        
 
-# --- Formulaire pour Séance (après modification du modèle Seance) ---
+
+# --- Formulaire pour Séance ---
 class SeanceForm(forms.ModelForm):
-    """
-    Formulaire pour créer ou modifier une Séance.
-    Maintenant lié au modèle Room par une ForeignKey.
-    """
+    """Formulaire pour créer ou modifier une Séance avec filtrage dynamique de la salle."""
     class Meta:
         model = Seance
         fields = [
@@ -44,266 +91,189 @@ class SeanceForm(forms.ModelForm):
             'date',
             'heure_debut',
             'heure_fin',
-            'room', # Le nouveau champ ForeignKey
+            'room',
             'instructor',
             'sujet_aborde',
             'est_annulee',
             'note_seance',
-            # 'created_by', 'updated_at' si ajoutés au modèle mais souvent gérés automatiquement ou en vue
         ]
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'heure_debut': forms.TimeInput(attrs={'type': 'time'}),
-            'heure_fin': forms.TimeInput(attrs={'type': 'time'}),
-            'note_seance': forms.Textarea(attrs={'rows': 3}),
+            'date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'heure_debut': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'heure_fin': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control'}),
+            'room': forms.Select(attrs={'class': 'form-select'}),
+            'instructor': forms.Select(attrs={'class': 'form-select'}),
+            'sujet_aborde': forms.TextInput(attrs={'class': 'form-control'}),
+            'note_seance': forms.Textarea(attrs={'rows': 3, 'class': 'form-control'}),
+            'est_annulee': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
-
-    # --- Fonction helper pour trouver les salles disponibles ---
-# Cette fonction est utilisée par le formulaire pour filtrer les choix de salles.
-def get_available_rooms_for_seance(session_id, seance_date, seance_heure_debut, seance_heure_fin, current_seance_id=None):
-    """
-    Retourne un queryset des salles disponibles pour un créneau horaire donné,
-    en tenant compte des réservations existantes et de la capacité requise.
-
-    Args:
-        session_id (int): L'ID de la session pour connaître la capacité requise.
-        seance_date (date): La date de la séance.
-        seance_heure_debut (time): L'heure de début de la séance.
-        seance_heure_fin (time): L'heure de fin de la séance.
-        current_seance_id (int, optional): L'ID de la séance en cours de modification.
-                                           Permet d'exclure cette séance de la vérification d'occupation.
-
-    Returns:
-        QuerySet: Un queryset des objets Room disponibles.
-    """
-    # Récupérer la session pour connaître la capacité maximale
-    try:
-        session = Session.objects.get(pk=session_id)
-        capacite_requise = session.capacite_max
-    except Session.DoesNotExist:
-        # Si la session n'existe pas, on ne peut pas vérifier la capacité requise.
-        # On peut choisir de ne retourner aucune salle ou toutes les salles.
-        # Retournons un queryset vide pour être prudent.
-        print(f"AVERTISSEMENT: Session with ID {session_id} not found when checking room availability.")
-        return Room.objects.none()
-
-
-    # Trouver les séances qui se chevauchent avec le créneau horaire donné à la même date
-    # Condition de chevauchement : Début < Fin_Autre ET Fin > Début_Autre
-    # Note : Cette logique suppose que heure_fin est toujours après heure_debut le même jour.
-    # Si les séances peuvent traverser minuit, la logique de chevauchement doit être plus complexe.
-    overlapping_seances = Seance.objects.filter(
-        date=seance_date
-    ).filter(
-        Q(heure_debut__lt=seance_heure_fin) & Q(heure_fin__gt=seance_heure_debut)
-    )
-
-    # Si nous modifions une séance existante, l'exclure de la vérification de chevauchement
-    if current_seance_id:
-         overlapping_seances = overlapping_seances.exclude(pk=current_seance_id)
-
-    # Obtenir les IDs des salles qui sont occupées par ces séances qui se chevauchent
-    # On veut les IDs des salles, en s'assurant qu'elles ne sont pas NULL (pour les séances sans salle attribuée)
-    booked_room_ids = overlapping_seances.exclude(room__isnull=True).values_list('room', flat=True).distinct()
-
-    # Filtrer les salles disponibles :
-    # 1. Elles doivent être assez grandes pour la capacité requise
-    # 2. Elles ne doivent PAS être dans la liste des IDs de salles occupées (booked_room_ids)
-    available_rooms_queryset = Room.objects.filter(capacity__gte=capacite_requise)
-
-    # Exclure les salles qui sont occupées à ce créneau
-    available_rooms_queryset = available_rooms_queryset.exclude(pk__in=booked_room_ids)
-
-    return available_rooms_queryset
-
-
-# --- Formulaire pour Séance (après modification du modèle Seance) ---
-class SeanceForm(forms.ModelForm):
-    """
-    Formulaire pour créer ou modifier une Séance.
-    Maintenant lié au modèle Room par une ForeignKey.
-    Le champ 'room' est filtré dynamiquement.
-    """
-    class Meta:
-        model = Seance
-        fields = [
-            'session',
-            'date',
-            'heure_debut',
-            'heure_fin',
-            'room', # Le nouveau champ ForeignKey
-            'instructor',
-            'sujet_aborde',
-            'est_annulee',
-            'note_seance',
-            # Ajoutez 'created_by' et 'updated_at' ici si vous voulez les afficher/modifier dans le formulaire,
-            # mais ils sont souvent gérés automatiquement ou en vue.
-            # 'created_by',
-            # 'updated_at',
-        ]
-        widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
-            'heure_debut': forms.TimeInput(attrs={'type': 'time'}),
-            'heure_fin': forms.TimeInput(attrs={'type': 'time'}),
-            'note_seance': forms.Textarea(attrs={'rows': 3}),
+        labels = {
+            'room': _("Salle de la séance"),
+            'sujet_aborde': _("Sujet abordé"),
         }
 
     def __init__(self, *args, **kwargs):
-        # --- Gérer l'objet request et session_pk passés aux kwargs ---
-        # Récupérer l'objet request si il est passé, et le retirer de kwargs
-        self.request = kwargs.pop('request', None)
-        # Récupérer la session_pk si elle est passée, et la retirer de kwargs
+        # 1. Gérer les kwargs personnalisés (session_pk)
         session_pk = kwargs.pop('session_pk', None)
+        kwargs.pop('request', None)
 
-        # Appeler la méthode __init__ de la classe parente avec les arguments restants
+        # 2. Appel de la méthode parente
         super().__init__(*args, **kwargs)
 
-        # --- Pré-filtrage du queryset du champ 'room' ---
-        # Ce filtrage est fait lors de l'affichage initial du formulaire (GET)
-        # et peut être basé sur l'instance existante (modification) ou la session_pk (création)
+        session_id = self.instance.session_id if self.instance and self.instance.session_id else session_pk
+        current_seance_id = self.instance.pk if self.instance else None
 
-        instance = self.instance # L'instance Seance si on est en modification
-        seance_date = None
-        seance_heure_debut = None
-        seance_heure_fin = None
-        current_seance_id = None
-        session_id = None # Pour passer à la fonction helper
+        # 🛑 RETRAIT DE LA LOGIQUE HIDDENINPUT ET INITIALISATION FORCÉE 🛑
+        # On laisse le champ 'session' se comporter comme un champ normal.
+        # Cependant, en mode création, il peut être utile de pré-sélectionner la session :
+        if session_pk is not None and 'session' in self.fields:
+            # Initialisation pour pré-sélectionner la bonne session dans le Select
+            if self.instance._state.adding and session_pk is not None:
+                self.initial['session'] = session_pk
+            # On ne masque plus le champ ici :
+            # self.fields['session'].widget = forms.HiddenInput()
 
-        if instance and instance.pk: # Si on modifie une séance existante
-            seance_date = instance.date
-            seance_heure_debut = instance.heure_debut
-            seance_heure_fin = instance.heure_fin
-            current_seance_id = instance.pk
-            session_id = instance.session.pk # Récupérer l'ID de la session liée
+            # 🛑 CORRECTION CRITIQUE (1/2)
+            # Initialiser le champ masqué pour garantir que la valeur est dans les données POST
+            if self.instance._state.adding:  # Si on est en mode création
+                self.initial['session'] = session_id
 
-        elif session_pk: # Si on crée une séance pour une session spécifique (session_pk passé)
-             session_id = session_pk
-             # En création, la date/heures ne sont pas connues lors de l'initialisation du formulaire.
-             # Le filtrage complet basé sur le chevauchement n'est pas possible ici.
-             # On peut au moins filtrer par capacité si session_id est connu.
-             # Les valeurs initiales pourraient être utilisées si elles sont passées :
-             # seance_date = self.initial.get('date')
-             # seance_heure_debut = self.initial.get('heure_debut')
-             # seance_heure_fin = self.initial.get('heure_fin')
+        # 4. Pré-filtrage du queryset 'room' (par capacité et disponibilité)
+        if session_id is not None:
+            try:
+                # Assurez-vous d'utiliser le bon modèle
+                session_obj = Session.objects.get(pk=session_id)
 
+                # Récupérer les valeurs initiales pour le filtrage
+                seance_date = self.initial.get('date') or (
+                    self.instance.date if self.instance else None)
+                seance_heure_debut = self.initial.get('heure_debut') or (
+                    self.instance.heure_debut if self.instance else None)
+                seance_heure_fin = self.initial.get('heure_fin') or (
+                    self.instance.heure_fin if self.instance else None)
 
-        # Définir le queryset du champ 'room'
-        # Si on a les infos de date/heure ET l'ID de session (en modification ou avec initiales complètes),
-        # on filtre par disponibilité en utilisant la fonction helper.
-        if seance_date and seance_heure_debut and seance_heure_fin and session_id is not None:
-            self.fields['room'].queryset = get_available_rooms_for_seance(
-                session_id=session_id,
-                seance_date=seance_date,
-                seance_heure_debut=seance_heure_debut,
-                seance_heure_fin=seance_heure_fin,
-                current_seance_id=current_seance_id # Passer l'ID de la séance en cours si modification
-            )
-        elif session_id is not None:
-             # En création sans date/heure connues lors de l'initialisation,
-             # on peut au moins filtrer par capacité si session_id est connu.
-             try:
-                 session_obj = Session.objects.get(pk=session_id)
-                 self.fields['room'].queryset = Room.objects.filter(capacity__gte=session_obj.capacite_max)
-             except Session.DoesNotExist:
-                 # Gérer l'erreur si la session n'existe pas (devrait être géré par get_object_or_404 dans la vue)
-                 self.fields['room'].queryset = Room.objects.none() # Pas de salles disponibles si la session est invalide
-                 # Vous pourriez aussi ajouter un message d'erreur global ici si nécessaire
+                # Si on a les informations de créneau, on filtre par disponibilité complète (mode modification ou retour d'erreur)
+                if seance_date and seance_heure_debut and seance_heure_fin:
+                    # 🛑 CORRECTION (2/2) :
+                    # Cette fonction DOIT utiliser 'capacite__gte' et non 'capacity__gte'
+                    room_queryset = get_available_rooms_for_seance(
+                        session_id=session_id,
+                        seance_date=seance_date,
+                        seance_heure_debut=seance_heure_debut,
+                        seance_heure_fin=seance_heure_fin,
+                        current_seance_id=current_seance_id
+                    ).order_by('name')  # Ajout du tri pour un affichage propre
+                else:
+                    # En mode création SANS données initiales (premier affichage), on filtre uniquement par capacité
+                    room_queryset = Room.objects.filter(
+                        # Le nom du champ de Room est 'capacite'
+                        # Le nom du champ de Session est 'capacite_max' (selon votre code)
+                        capacite__gte=session_obj.capacite_max
+                    ).order_by('name')
 
+                self.fields['room'].queryset = room_queryset
 
-        # --- Optionnel : Cacher le champ 'session' ---
-        # Si le formulaire est utilisé dans un contexte où la session est déjà connue (ex: création/modification depuis page session_detail)
-        # on peut cacher le champ 'session' et le pré-remplir.
-        if 'session' in self.fields and session_pk is not None:
-             self.fields['session'].widget = forms.HiddenInput()
-             # Pré-remplir le champ session s'il est caché et session_pk est connu
-             # On utilise initial ici, la validation dans clean() s'assurera qu'il est correct
-             # self.fields['session'].initial = get_object_or_404(Session, pk=session_pk)
-             # Note : Dans la vue CreateView/UpdateView, il est souvent plus simple
-             # de définir form.instance.session = session_obj dans form_valid()
-             # plutôt que de gérer l'initial ici si le champ est caché.
+            except Session.DoesNotExist:
+                self.fields['room'].queryset = Room.objects.none()
 
-
-    # --- Validation personnalisée dans clean() ---
-    # Ceci est CRUCIAL pour un formulaire de CRÉATION où date/heure/salle sont entrés par l'utilisateur
-    # Et pour un formulaire de MODIFICATION si date/heure/salle sont modifiés
-    # Cette méthode est appelée après la validation des champs individuels.
     def clean(self):
-        # Appeler la méthode clean de la classe parente pour obtenir les données validées
         cleaned_data = super().clean()
 
-        # Récupérer les données des champs nécessaires à la validation
+        # Récupérer les données nettoyées
         seance_date = cleaned_data.get('date')
         seance_heure_debut = cleaned_data.get('heure_debut')
         seance_heure_fin = cleaned_data.get('heure_fin')
         selected_room = cleaned_data.get('room')
-        session_obj = cleaned_data.get('session') # Récupérer la session depuis les données nettoyées
 
-        # --- Validation de la plage horaire ---
+        # Le champ 'session' est maintenant visible
+        session_obj = cleaned_data.get('session')
+        instructor = cleaned_data.get('instructor')
+
+        # Si le champ 'session' est masqué et n'a pas été posté (erreur de template ou vue), il sera None ici.
+        # Si session_obj est None, on ne peut pas faire les validations basées sur la session.
+        if session_obj is None and self.instance and self.instance.pk:
+            # Tenter de récupérer depuis l'instance en modification
+            session_obj = self.instance.session
+
+        # 1. Validation de la plage horaire
         if seance_heure_debut and seance_heure_fin and seance_heure_debut >= seance_heure_fin:
-             self.add_error('heure_fin', _("L'heure de fin doit être postérieure à l'heure de début."))
-             # Retourner cleaned_data ici si vous voulez arrêter la validation après cette erreur
-             # return cleaned_data
+            self.add_error('heure_fin', _(
+                "L'heure de fin doit être postérieure à l'heure de début."))
 
-        # --- Validation de la date par rapport à la période de la session ---
+        # 2. Validation de la date par rapport à la période de la session
         if seance_date and session_obj:
-             if seance_date < session_obj.date_debut_session or seance_date > session_obj.date_fin_session:
-                 self.add_error('date', _("La date de la séance doit être comprise dans la période de la session."))
-                 # return cleaned_data
+            # Le champ de la session dans l'instance du modèle
+            date_debut_session = session_obj.date_debut_session
+            date_fin_session = session_obj.date_fin_session
+            # Vérifiez que les dates de la session ne sont pas None (bien que moins probable si Session est valide)
+            if date_debut_session and date_fin_session:
+                # Validation des dates par rapport à la session parente
+                if seance_date < date_debut_session:
+                    raise ValidationError({
+                        'date': _("La date de la séance ne peut pas être avant le début de la session (%(date_debut)s).") %
+                        {'date_debut': date_debut_session}
+                    })
+                if seance_date > date_fin_session:
+                    raise ValidationError({
+                        'date': _("La date de la séance ne peut pas être après la fin de la session (%(date_fin)s).") %
+                        {'date_fin': date_fin_session}
+                    })
+            return cleaned_data
 
+        # 3. Vérification de la disponibilité de la salle (chevauchement et capacité)
+        is_valid_time = all(
+            [seance_date, seance_heure_debut, seance_heure_fin])
 
-        # --- Vérification de la disponibilité de la salle (chevauchement) ---
-        # Ne vérifier la disponibilité que si tous les champs nécessaires sont présents et valides
-        # (les erreurs précédentes auront peut-être déjà ajouté des erreurs)
-        # On vérifie si 'date', 'heure_debut', 'heure_fin', 'room' et 'session' sont dans cleaned_data
-        # et ne sont pas None (ce qui peut arriver si un champ individuel n'a pas passé sa validation)
-        if all([seance_date, seance_heure_debut, seance_heure_fin, selected_room, session_obj]) and not self.errors:
-            # Récupérer l'instance de la séance si elle existe (pour l'exclure de la vérification en modification)
-            # self.instance est l'objet Seance si on est en modification, None si on est en création
+        if is_valid_time and selected_room and session_obj and not self.errors:
             current_seance_id = self.instance.pk if self.instance and self.instance.pk else None
 
-            # Utiliser la fonction helper pour trouver les salles disponibles pour ce créneau
-            # Si la salle sélectionnée n'est PAS dans le queryset des salles disponibles, c'est qu'elle est occupée.
             available_rooms_at_this_time = get_available_rooms_for_seance(
-                session_id=session_obj.pk, # Passer l'ID de la session
+                session_id=session_obj.pk,
                 seance_date=seance_date,
                 seance_heure_debut=seance_heure_debut,
                 seance_heure_fin=seance_heure_fin,
-                current_seance_id=current_seance_id # Passer l'ID de la séance en cours (sera None en création)
+                current_seance_id=current_seance_id
             )
 
-            # Vérifier si la salle sélectionnée fait partie des salles disponibles calculées
+            # Vérifier si la salle sélectionnée est toujours disponible
             if selected_room not in available_rooms_at_this_time:
-                # Si la salle sélectionnée n'est pas disponible, ajouter une erreur
-                self.add_error('room', _("La salle sélectionnée n'est pas disponible à ce créneau horaire ou ne correspond pas à la capacité requise."))
-                # Alternative plus spécifique si vous voulez distinguer capacité et chevauchement :
-                # if selected_room.capacity < session_obj.capacite_max:
-                #      self.add_error('room', _("La salle sélectionnée n'est pas assez grande pour cette session."))
-                # else: # Si la capacité est OK, c'est qu'elle est occupée
-                #      self.add_error('room', _("Cette salle est déjà réservée à ce créneau horaire."))
+                # Ajout d'une erreur plus spécifique si possible (capacité vs. chevauchement)
+                if selected_room.capacite < session_obj.capacite_max:
+                    self.add_error('room', _(
+                        f"La salle est trop petite (Capacité requise : {session_obj.capacite_max})."))
+                else:
+                    self.add_error('room', _(
+                        "Cette salle est déjà réservée ou indisponible à ce créneau horaire."))
 
+        # 4. Validation de la disponibilité de l'instructeur (similaire à la salle)
+        if instructor and is_valid_time and not self.errors:
+            current_seance_id = self.instance.pk if self.instance and self.instance.pk else None
 
-        # Retourner les données nettoyées (avec les erreurs ajoutées si nécessaire)
+            # Vérifier les chevauchements pour l'instructeur sur d'autres séances
+            conflicting_seances = Seance.objects.filter(
+                instructor=instructor,
+                date=seance_date
+            ).filter(
+                Q(heure_debut__lt=seance_heure_fin) & Q(
+                    heure_fin__gt=seance_heure_debut)
+            ).exclude(
+                pk=current_seance_id
+            )
+
+            if conflicting_seances.exists():
+                self.add_error('instructor', _(
+                    "Cet instructeur a déjà une séance planifiée à ce créneau horaire."))
+
         return cleaned_data
 
 
-
-# formulaire de Session:
-#-----------------------
-
 class SessionForm(forms.ModelForm):
+    # ... (Meta et init) ...
     class Meta:
         model = Session
         fields = [
-            'formation',
-            'nom_session',
-            'statut',
-            'date_debut_session',
-            'date_fin_session',
-            'instructor_principal',
-            'lieu',
-            'capacite_max',
-            'capacite_min',
-            'description'
+            'formation', 'nom_session', 'statut', 'date_debut_session', 'date_fin_session',
+            'instructor_principal', 'lieu', 'capacite_max', 'capacite_min', 'description'
         ]
         widgets = {
             'date_debut_session': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
@@ -318,15 +288,10 @@ class SessionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
-        # Filtre les formations actives seulement
-        self.fields['formation'].queryset = Formation.objects.filter(est_active=True)
-        
-        # Filtrer les utilisateurs actifs de type formateur
-        self.fields['instructor_principal'].queryset = CustomUser.objects.filter(is_active=True, role=UserRole.INSTRUCTOR)
-
-        
-        # Si instance existe (mode édition), on adapte les choix
+        self.fields['formation'].queryset = Formation.objects.filter(
+            est_active=True)
+        self.fields['instructor_principal'].queryset = CustomUser.objects.filter(
+            is_active=True, role=UserRole.INSTRUCTOR)
         if self.instance and self.instance.pk:
             self.fields['formation'].disabled = True
             self.initial['capacite_min'] = self.instance.capacite_min or 5
@@ -336,49 +301,56 @@ class SessionForm(forms.ModelForm):
         date_debut = cleaned_data.get('date_debut_session')
         date_fin = cleaned_data.get('date_fin_session')
         capacite_max = cleaned_data.get('capacite_max')
-        capacite_min = cleaned_data.get('capacite_min', 5)  # Valeur par défaut
+        capacite_min = cleaned_data.get('capacite_min', 5)
 
-        # Validation des dates
         if date_debut and date_fin:
             if date_fin < date_debut:
-                self.add_error('date_fin_session', "La date de fin doit être après la date de début.")
-            
-            # Validation si on modifie une session en cours
+                self.add_error(
+                    'date_fin_session', "La date de fin doit être après la date de début.")
             if self.instance and self.instance.pk:
                 if self.instance.statut in ['IN_PROGRESS', 'COMPLETED'] and date_debut != self.instance.date_debut_session:
-                    self.add_error('date_debut_session', "Impossible de modifier la date de début d'une session en cours ou terminée.")
+                    self.add_error(
+                        'date_debut_session', "Impossible de modifier la date de début d'une session en cours ou terminée.")
 
-        # Validation des capacités
         if capacite_max and capacite_min:
             if capacite_min < 1:
-                self.add_error('capacite_min', "La capacité minimale doit être d'au moins 1 participant.")
+                self.add_error(
+                    'capacite_min', "La capacité minimale doit être d'au moins 1 participant.")
             if capacite_max < capacite_min:
-                self.add_error('capacite_max', f"La capacité maximale doit être supérieure ou égale à la capacité minimale ({capacite_min}).")
+                self.add_error(
+                    'capacite_max', f"La capacité maximale doit être supérieure ou égale à la capacité minimale ({capacite_min}).")
             elif capacite_max > 100:
-                self.add_error('capacite_max', "La capacité maximale ne peut excéder 100 participants.")
+                self.add_error(
+                    'capacite_max', "La capacité maximale ne peut excéder 100 participants.")
 
-        # Validation du formateur principal
         instructor = cleaned_data.get('instructor_principal')
         if instructor and date_debut and date_fin:
-            # Vérifie si le formateur a d'autres sessions pendant cette période
             conflits = Session.objects.filter(
                 Q(instructor_principal=instructor),
                 Q(date_debut_session__lte=date_fin),
                 Q(date_fin_session__gte=date_debut)
             ).exclude(pk=self.instance.pk if self.instance else None)
-            
+
             if conflits.exists():
-                self.add_error('instructor_principal', 
-                    f"Ce formateur a déjà une session du {conflits[0].date_debut_session} au {conflits[0].date_fin_session}")
+                self.add_error(
+                    'instructor_principal', f"Ce formateur a déjà une session du {conflits[0].date_debut_session} au {conflits[0].date_fin_session}")
 
         return cleaned_data
-    
-    
-    
-SeanceFormSet = modelformset_factory(
+
+
+# Utilisation de inlineformset_factory pour les séances liées à une session
+SeanceFormSet = inlineformset_factory(
+    Session,
     Seance,
-    form=SeanceForm, # Utilise votre SeanceForm personnalisé
-    extra=3,         # Afficher 3 formulaires vides par défaut pour l'ajout
-    can_delete=False # Nous sommes dans une vue de création, pas besoin de supprimer les existants
-    # Si vous adaptez cette vue pour aussi MODIFIER/SUPPRIMER, mettez can_delete=True
-) 
+    form=SeanceForm,
+    extra=5,
+    fields=['date', 'heure_debut', 'heure_fin',
+            'instructor', 'room', 'sujet_aborde']
+)
+
+
+class RoomForm(forms.ModelForm):
+    class Meta:
+        model = Room
+        # Remplacez par les vrais noms de champs de votre modèle Room
+        fields = ['name', 'capacite', 'equipements', 'localisation']

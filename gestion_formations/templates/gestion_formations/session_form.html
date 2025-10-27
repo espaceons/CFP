@@ -1,138 +1,118 @@
+{# session_form.html #} {% extends 'base.html' %} {% block content %}
+  <div class="container mt-4">
+    <h2>
+      {% if object %}
+        Modifier
+      {% else %}
+        Créer
+      {% endif %}une Session
+    </h2>
 
-{# session_form.html #}
-{% extends 'base.html' %}
-
-{% block content %}
-<div class="container mt-4">
-    <h2>{% if object %}Modifier{% else %}Créer{% endif %} une Session</h2>
-    
     <form method="post" novalidate>
-        {% csrf_token %}
-        
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {% for error in form.non_field_errors %}
-                    {{ error }}
-                {% endfor %}
-            </div>
-        {% endif %}
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    {{ form.formation.label_tag }}
-                    {{ form.formation }}
-                    {% if form.formation.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.formation.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.nom_session.label_tag }}
-                    {{ form.nom_session }}
-                    <small class="text-muted">Ex: "Session Printemps 2024"</small>
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.statut.label_tag }}
-                    {{ form.statut }}
-                </div>
-                
-                <!-- Ajout du bouton "Ajouter un nouveau formateur" ici -->
-                <div class="mb-3">
-                    <label>Formateur principal</label>
-                    {{ form.instructor_principal }}
-                    {% if form.instructor_principal.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.instructor_principal.errors }}
-                        </div>
-                    {% endif %}
-                    
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="mb-3">
-                    {{ form.date_debut_session.label_tag }}
-                    {{ form.date_debut_session }}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.date_fin_session.label_tag }}
-                    {{ form.date_fin_session }}
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ form.capacite_min.label_tag }}
-                            {{ form.capacite_min }}
-                            <small class="text-muted">Minimum requis</small>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            {{ form.capacite_max.label_tag }}
-                            {{ form.capacite_max }}
-                            <small class="text-muted">Maximum autorisé</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.lieu.label_tag }}
-                    {{ form.lieu }}
-                    <small class="text-muted">Salle principale</small>
-                </div>
-            </div>
+      {% csrf_token %} {# 🛑 CORRECTION : AJOUTER LA SESSION MASQUÉE ICI 🛑 #} {{ form.session }} {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            {{ error }}
+          {% endfor %}
         </div>
-        
-        <div class="mb-3">
-            {{ form.description.label_tag }}
-            {{ form.description }}
-            <small class="text-muted">Informations complémentaires</small>
-        </div>
-        
-        <div class="d-flex justify-content-between">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> Enregistrer
-            </button>
-            <a href="{% if object %}{% url 'gestion_formations:session_detail' pk=object.pk %}{% else %}{% url 'gestion_formations:formation_list' %}{% endif %}" 
-               class="btn btn-secondary">
-                Annuler
-            </a>
-        </div>
-    </form>
-</div>
+      {% endif %}
 
-<script>
-// Script pour améliorer l'UX
-document.addEventListener('DOMContentLoaded', function() {
-    // Validation des dates en temps réel
-    const dateDebut = document.getElementById('id_date_debut_session');
-    const dateFin = document.getElementById('id_date_fin_session');
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            {{ form.formation.label_tag }} {{ form.formation }} {% if form.formation.errors %}
+              <div class="invalid-feedback d-block">{{ form.formation.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.nom_session.label_tag }} {{ form.nom_session }}
+            <small class="text-muted">Ex: "Session Printemps 2024"</small>
+          </div>
+
+          <div class="mb-3">{{ form.statut.label_tag }} {{ form.statut }}</div>
+
+          <!-- Ajout du bouton "Ajouter un nouveau formateur" ici -->
+          <div class="mb-3">
+            <label>Formateur principal</label>
+            {{ form.instructor_principal }} {% if form.instructor_principal.errors %}
+              <div class="invalid-feedback d-block">{{ form.instructor_principal.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">{{ form.date_debut_session.label_tag }} {{ form.date_debut_session }}</div>
+
+          <div class="mb-3">{{ form.date_fin_session.label_tag }} {{ form.date_fin_session }}</div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                {{ form.capacite_min.label_tag }} {{ form.capacite_min }}
+                <small class="text-muted">Minimum requis</small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                {{ form.capacite_max.label_tag }} {{ form.capacite_max }}
+                <small class="text-muted">Maximum autorisé</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            {{ form.lieu.label_tag }} {{ form.lieu }}
+            <small class="text-muted">Salle principale</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        {{ form.description.label_tag }} {{ form.description }}
+        <small class="text-muted">Informations complémentaires</small>
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Enregistrer</button>
+        <a href="{% if object %}
+            {% url 'gestion_formations:session_detail' pk=object.pk %}
+          {% else %}
+            {% url 'gestion_formations:formation_list' %}
+          {% endif %}"
+          class="btn btn-secondary">
+          Annuler
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Script pour améliorer l'UX
+    document.addEventListener('DOMContentLoaded', function () {
+      // Validation des dates en temps réel
+      const dateDebut = document.getElementById('id_date_debut_session')
+      const dateFin = document.getElementById('id_date_fin_session')
     
-    [dateDebut, dateFin].forEach(el => {
-        el.addEventListener('change', function() {
-            if (dateDebut.value && dateFin.value && dateFin.value < dateDebut.value) {
-                alert('Attention : La date de fin doit être après la date de début');
-            }
-        });
-    });
+      ;[dateDebut, dateFin].forEach((el) => {
+        el.addEventListener('change', function () {
+          if (dateDebut.value && dateFin.value && dateFin.value < dateDebut.value) {
+            alert('Attention : La date de fin doit être après la date de début')
+          }
+        })
+      })
     
-    // Validation des capacités
-    const capMin = document.getElementById('id_capacite_min');
-    const capMax = document.getElementById('id_capacite_max');
+      // Validation des capacités
+      const capMin = document.getElementById('id_capacite_min')
+      const capMax = document.getElementById('id_capacite_max')
     
-    [capMin, capMax].forEach(el => {
-        el.addEventListener('change', function() {
-            if (capMin.value && capMax.value && parseInt(capMax.value) < parseInt(capMin.value)) {
-                alert('La capacité maximale doit être supérieure à la capacité minimale');
-            }
-        });
-    });
-});
-</script>
+      ;[capMin, capMax].forEach((el) => {
+        el.addEventListener('change', function () {
+          if (capMin.value && capMax.value && parseInt(capMax.value) < parseInt(capMin.value)) {
+            alert('La capacité maximale doit être supérieure à la capacité minimale')
+          }
+        })
+      })
+    })
+  </script>
 {% endblock %}

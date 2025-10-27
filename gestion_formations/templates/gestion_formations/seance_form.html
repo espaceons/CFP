@@ -1,94 +1,79 @@
-{# cree ou modifier une seance #}
-
-{% extends 'base.html' %}
-
+{# cree ou modifier une seance #} {% extends 'base.html' %}
 {% block content %}
-<div class="container mt-4">
-    <h2>{% if object %}Modifier{% else %}Créer{% endif %} une Séance</h2>
+  <div class="container mt-4">
+    <h2>
+      {% if object %}
+        Modifier
+      {% else %}
+        Créer
+      {% endif %}une Séance
+    </h2>
     <form method="post">
-        {% csrf_token %}
-        
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {% for error in form.non_field_errors %}
-                    {{ error }}
-                {% endfor %}
-            </div>
+      {% csrf_token %}
+
+      {# 🛑 EMPLACEMENT POUR LE CHAMP SESSION VISIBLE 🛑 #}
+      <div class="mb-3">
+        {{ form.session.label_tag }}
+        {{ form.session }}
+        {% if form.session.errors %}
+          <div class="invalid-feedback d-block">{{ form.session.errors }}</div>
         {% endif %}
-        
-        <div class="row">
-            <div class="col-md-6">
-                <div class="mb-3">
-                    {{ form.date.label_tag }}
-                    {{ form.date }}
-                    {% if form.date.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.date.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.heure_debut.label_tag }}
-                    {{ form.heure_debut }}
-                    {% if form.heure_debut.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.heure_debut.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.heure_fin.label_tag }}
-                    {{ form.heure_fin }}
-                    {% if form.heure_fin.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.heure_fin.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="mb-3">
-                    {{ form.instructor.label_tag }}
-                    {{ form.instructor }}
-                    {% if form.instructor.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.instructor.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.lieu_seance.label_tag }}
-                    {{ form.lieu_seance }}
-                    {% if form.lieu_seance.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.lieu_seance.errors }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <div class="mb-3">
-                    {{ form.sujet_aborde.label_tag }}
-                    {{ form.sujet_aborde }}
-                </div>
-            </div>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            {{ error }}
+          {% endfor %}
         </div>
-        
-        <div class="mb-3">
-            {{ form.note_seance.label_tag }}
-            {{ form.note_seance }}
+      {% endif %}
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            {{ form.date.label_tag }} {{ form.date }} {% if form.date.errors %}
+              <div class="invalid-feedback d-block">{{ form.date.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.heure_debut.label_tag }} {{ form.heure_debut }} {% if form.heure_debut.errors %}
+              <div class="invalid-feedback d-block">{{ form.heure_debut.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.heure_fin.label_tag }} {{ form.heure_fin }} {% if form.heure_fin.errors %}
+              <div class="invalid-feedback d-block">{{ form.heure_fin.errors }}</div>
+            {% endif %}
+          </div>
         </div>
-        
-        <div class="mb-3 form-check">
-            {{ form.est_annulee }}
-            {{ form.est_annulee.label_tag }}
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            {{ form.instructor.label_tag }} {{ form.instructor }} {% if form.instructor.errors %}
+              <div class="invalid-feedback d-block">{{ form.instructor.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            {{ form.room.label_tag }}
+            {{ form.room }}
+            {% if form.room.errors %}
+              <div class="invalid-feedback d-block">{{ form.room.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-3">{{ form.sujet_aborde.label_tag }} {{ form.sujet_aborde }}</div>
         </div>
-        
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <a href="{% url 'gestion_formations:session_detail' pk=form.instance.session.pk %}" class="btn btn-secondary">Annuler</a>
+      </div>
+
+      <div class="mb-3">{{ form.note_seance.label_tag }} {{ form.note_seance }}</div>
+
+      <div class="mb-3 form-check">{{ form.est_annulee }} {{ form.est_annulee.label_tag }}</div>
+
+      <button type="submit" class="btn btn-primary">Enregistrer</button>
+      <a href="{% url 'gestion_formations:session_detail' pk=object.session.pk %}" class="btn btn-secondary">Annuler</a>
     </form>
-</div>
+  </div>
 {% endblock %}

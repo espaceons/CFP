@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container mt-4">
+    <h2>
+      {% if object %}
+        Modifier la Salle : {{ object.name }}
+      {% else %}
+        Créer une Nouvelle Salle
+      {% endif %}
+    </h2>
+
+    <form method="post" class="card p-4">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            {{ error }}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="mb-3">
+        {{ form.name.label_tag }}
+        {{ form.name }}
+        {% if form.name.errors %}
+          <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        {{ form.capacite.label_tag }}
+        {{ form.capacite }}
+        {% if form.capacite.errors %}
+          <div class="invalid-feedback d-block">{{ form.capacite.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        {{ form.localisation.label_tag }}
+        {{ form.localisation }}
+        {% if form.localisation.errors %}
+          <div class="invalid-feedback d-block">{{ form.localisation.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3">
+        {{ form.equipements.label_tag }}
+        {{ form.equipements }}
+        {% if form.equipements.errors %}
+          <div class="invalid-feedback d-block">{{ form.equipements.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-success me-2">Enregistrer la Salle</button>
+        <a href="{% url 'gestion_formations:room_list' %}" class="btn btn-secondary">Annuler</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

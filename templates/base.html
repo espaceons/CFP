@@ -1,26 +1,17 @@
-{# base.html #}
-
-{% load static %} {# Charger les balises static si vous utilisez des fichiers statiques #}
+{# base.html #} {% load static %}
 
 <html>
-    {% include 'includes/_head.html' %}
+  {% include 'includes/_head.html' %}
 
-    <body>
-        {# Vérifier si l'utilisateur est authentifié #}
-       
-            {% include 'includes/_header.html' %} {# Inclure la barre de navigation pour les utilisateurs authentifiés #}
+  <body>
+    {% include 'includes/_header.html' %}
 
-        {# Inclure le header du site #}
-        
+    <main>
+      {% block content %}
 
-        <main> {# Utilisation d'une balise sémantique pour le contenu principal #}
-            {% block content %}
-                {# Le contenu spécifique de chaque page ira ici #}
-            {% endblock %}
-        </main>
+      {% endblock %}
+    </main>
 
-        {% include 'includes/_footer.html' %}
-
-        {% include 'includes/_scripts.html' %}
-    </body>
+    {% include 'includes/_footer.html' %} {% include 'includes/_scripts.html' %}
+  </body>
 </html>

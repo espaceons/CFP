@@ -1,38 +1,27 @@
-{# Ce fichier est inclus dans le template de base pour les pages publiques #}
-{# Il contient la barre de navigation pour les utilisateurs non connectés #}
-{# Il est inclus dans le template de base public (base_public.html) #}
+{% load static %}
+{% load i18n %}
 
-{% load static %} {# Charge les fichiers statiques #}
-{% load i18n %} {# Charge les traductions #}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavPublic" aria-controls="navbarNavPublic" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navbarNavPublic">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="#">Centre de Formation Privé</a> {# Lien vers la liste des formations #}
+        </li>
+      </ul>
 
-{# Barre de navigation publique #}
-<nav class="navbar navbar-expand-lg navbar-light bg-light"> {# Exemple de classe Bootstrap #}
-    <div class="container-fluid">
-        {# Le brand/titre du site est géré dans _header.html maintenant #}
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavPublic" aria-controls="navbarNavPublic" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavPublic">
-            {# Liens alignés à gauche (exemple) #}
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                 <li class="nav-item">
-                     <a class="nav-link" href="#">Centre de Formation Privé</a> {# Lien vers la liste des formations #}
-                 </li>
-                 {# Ajoutez d'autres liens publics ici #}
-            </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'gestion_users:login' %}">Connexion</a> {# Lien vers la page de connexion #}
+        </li>
 
-            {# Liens alignés à droite (exemple) #}
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'gestion_users:login' %}">Connexion</a> {# Lien vers la page de connexion #}
-                </li>
-                {# Afficher le lien d'inscription seulement si SSO n'est PAS activé #}
-                {% if not settings.SSO_ENABLED %} {# Nécessite le context processor settings #}
-                     <li class="nav-item">
-                         <a class="nav-link" href="{% url 'gestion_users:signup' %}">Inscription</a> {# Lien vers la page d'inscription #}
-                     </li>
-                {% endif %}
-            </ul>
-        </div>
+        {% if not settings.SSO_ENABLED %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'gestion_users:signup' %}">Inscription</a> {# Lien vers la page d'inscription #}
+          </li>
+        {% endif %}
+      </ul>
     </div>
+  </div>
 </nav>

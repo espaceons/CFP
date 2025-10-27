@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container mt-4">
+    <h2>Confirmer la Suppression</h2>
+
+    <div class="alert alert-danger" role="alert">
+      <h4 class="alert-heading">Attention !</h4>
+      <p>
+        Êtes-vous sûr de vouloir supprimer la salle :
+        <strong>{{ object.name }}</strong> (Capacité : {{ object.capacite }}) ?
+      </p>
+      <p class="mb-0">Cette action est irréversible et pourrait impacter des séances planifiées.</p>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger me-2"><i class="fas fa-trash-alt"></i> Oui, Supprimer Définitivement</button>
+      <a href="{% url 'gestion_formations:room_detail' pk=object.pk %}" class="btn btn-secondary">Annuler</a>
+    </form>
+  </div>
+{% endblock %}

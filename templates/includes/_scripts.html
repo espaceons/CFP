@@ -1,20 +1,7 @@
-{# mon_projet/templates/includes/_scripts.html #}
-{% load static %} {# Assurez-vous que load static est présent #}
-{# <script src="{% static 'js/script.js' %}"></script> #}
-{# === Liens JavaScript === #}
+{% load static %}
 
-{# Lien vers le bundle Bootstrap JS (qui inclut Popper.js) via CDN #}
-{# Doit être placé juste avant la balise fermante </body> #}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-{# Vous pouvez ajouter vos propres scripts JS après Bootstrap #}
+{% block extra_scripts %}
 
-{# <script src="{% static 'js/script.js' %}"></script> #}
-
-{% block extra_scripts %}{% endblock %} {# Bloc pour ajouter des scripts spécifiques à une page #}
-
-{# Pensez à charger les fichiers JS de manière asynchrone si nécessaire #}
-{# Vous pouvez également envisager d'utiliser un gestionnaire de paquets comme Webpack pour gérer vos dépendances JS #}
-{# N'oubliez pas de tester vos scripts sur différents navigateurs pour assurer la compatibilité #}
-{# Pensez à ajouter des attributs ARIA pour améliorer l'accessibilité de vos scripts #}
-{# Vous pouvez également envisager d'utiliser un CDN pour charger des bibliothèques JS populaires #}
+{% endblock %}
