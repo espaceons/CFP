@@ -1,42 +1,67 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-4">
+  <h2>{{ titre_page }}</h2>
 
-{% block content %}
-  <div class="container mt-4">
-    <h2>{{ titre_page }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_nom" class="form-label">Nom de la formation</label>
+      {{ form.nom }}
+    </div>
+    <div class="mb-3">
+      <label for="id_date_debut_formation" class="form-label"
+        >Date de début de la formation</label
+      >
+      {{ form.date_debut_formation }}
+    </div>
+    <div class="mb-3">
+      <label for="id_date_fin_formation" class="form-label"
+        >Date de fin de la formation</label
+      >
+      {{ form.date_fin_formation }}
+    </div>
 
-    <form method="post">
-      {% csrf_token %}
-      <div class="mb-3">
-        <label for="id_nom" class="form-label">Nom de la formation</label>
-        {{ form.nom }}
-      </div>
+    <div class="mb-3">
+      <label for="id_description" class="form-label">Description</label>
+      {{ form.description }}
+    </div>
 
-      <div class="mb-3">
-        <label for="id_description" class="form-label">Description</label>
-        {{ form.description }}
-      </div>
+    <div class="mb-3">
+      <label for="id_objectifs" class="form-label">Objectifs</label>
+      {{ form.objectifs }}
+    </div>
 
-      <div class="mb-3">
-        <label for="id_objectifs" class="form-label">Objectifs</label>
-        {{ form.objectifs }}
-      </div>
+    <div class="mb-3">
+      <label for="id_prerequis" class="form-label">Prérequis</label>
+      {{ form.prerequis }}
+    </div>
 
-      <div class="mb-3">
-        <label for="id_prerequis" class="form-label">Prérequis</label>
-        {{ form.prerequis }}
-      </div>
+    <div class="mb-3">
+      <label for="id_duree_heures" class="form-label">Durée (en heures)</label>
+      {{ form.duree_heures }}
+    </div>
 
-      <div class="mb-3">
-        <label for="id_duree_heures" class="form-label">Durée (en heures)</label>
-        {{ form.duree_heures }}
-      </div>
+    <div class="mb-3 form-check">
+      <input
+        type="checkbox"
+        class="form-check-input"
+        id="id_est_active"
+        name="est_active"
+        {%
+        if
+        form.est_active.value
+        %}checked{%
+        endif
+        %}
+      />
+      <label class="form-check-label" for="id_est_active"
+        >Formation active</label
+      >
+    </div>
 
-      <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="id_est_active" name="est_active" {% if form.est_active.value %}checked{% endif %}>
-        <label class="form-check-label" for="id_est_active">Formation active</label>
-      </div>
-
-      <button type="submit" class="btn btn-primary">Sauvegarder la formation</button>
-    </form>
-  </div>
+    <button type="submit" class="btn btn-primary">
+      Sauvegarder la formation
+    </button>
+  </form>
+</div>
 {% endblock %}

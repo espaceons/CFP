@@ -30,6 +30,16 @@ class Formation(models.Model):  # cours
         blank=True, null=True, verbose_name=_("Prérequis"))
     est_active = models.BooleanField(
         default=True, verbose_name=_("Est active"))
+    date_debut_formation = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Date de début de la formation")
+    )
+    date_fin_formation = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_("Date de fin de la formation")
+    )
 
     class Meta:
         verbose_name = _("Formation")

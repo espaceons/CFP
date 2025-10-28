@@ -1,44 +1,52 @@
-{% extends 'base.html' %}
-
-{% block content %}
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Liste des Formations Disponibles</h2>
-    <div>
-      <a href="{% url 'gestion_formations:formation_create' %}" class="btn btn-success me-2">➕ Ajouter une formation</a>
-      <a href="{% url 'gestion_formations:formation_inactive_list' %}" class="btn btn-outline-warning">📂 Formations non actives</a>
-      <a href="{% url 'gestion_formations:formation_list' %}" class="btn btn-outline-info">📂 Formations actives</a>
+{% extends 'base.html' %} {% block content %}
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2>Liste des Formations Disponibles</h2>
+      <div>
+        <a href="{% url 'gestion_formations:formation_create' %}" class="btn btn-success me-2">➕ Ajouter une formation</a>
+        <a href="{% url 'gestion_formations:formation_inactive_list' %}" class="btn btn-outline-warning">📂 Formations non actives</a>
+        <a href="{% url 'gestion_formations:formation_list' %}" class="btn btn-outline-info">📂 Formations actives</a>
+      </div>
     </div>
-  </div>
 
-  <!-- Ici ton tableau de formations par exemple -->
-  <table class="table table-bordered">
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Durée (heures)</th>
-        <th>Active</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for formation in formations %}
-      <tr>
-        <td>{{ formation.nom }}</td>
-        <td>{{ formation.duree_heures }}</td>
-        <td>{% if formation.est_active %}✅{% else %}❌{% endif %}</td>
-        <td>
-          <a href="{% url 'gestion_formations:formation_detail' formation.pk %}" class="btn btn-primary btn-sm">Détails</a>
-          <a href="{% url 'gestion_formations:formation_update' formation.pk %}" class="btn btn-warning btn-sm">Modifier</a>
-          <a href="{% url 'gestion_formations:formation_delete' formation.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="4" class="text-center">Aucune formation trouvée.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+    <!-- Ici ton tableau de formations par exemple -->
+    <table class="table table-bordered" style="text-align:center">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Date debut</th>
+          <th>Date fin</th>
+          <th>Durée (heures)</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for formation in formations %}
+          <tr>
+            <td>{{ formation.nom }}</td>
+            <td>{{ formation.date_debut_formation }}</td>
+            <td>{{ formation.date_fin_formation }}</td>
+            <td>{{ formation.duree_heures }}</td>
+            <td>
+              {% if formation.est_active %}
+                ✅
+              {% else %}
+                ❌
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'gestion_formations:formation_detail' formation.pk %}" class="btn btn-primary btn-sm">Détails</a>
+              <a href="{% url 'gestion_formations:formation_update' formation.pk %}" class="btn btn-warning btn-sm">Modifier</a>
+              <a href="{% url 'gestion_formations:formation_delete' formation.pk %}" class="btn btn-danger btn-sm">Supprimer</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="text-center">Aucune formation trouvée.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}

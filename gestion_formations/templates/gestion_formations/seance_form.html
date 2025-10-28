@@ -73,7 +73,13 @@
       <div class="mb-3 form-check">{{ form.est_annulee }} {{ form.est_annulee.label_tag }}</div>
 
       <button type="submit" class="btn btn-primary">Enregistrer</button>
-      <a href="{% url 'gestion_formations:session_detail' pk=object.session.pk %}" class="btn btn-secondary">Annuler</a>
+      {% if object %}
+        {# Cas 1: Modification. L'objet existe, on récupère sa session. #}
+        <a href="{% url 'gestion_formations:session_detail' pk=object.session.pk %}" class="btn btn-secondary">Annuler</a>
+      {% else %}
+        {# Cas 2: Création. L'objet n'existe pas, on utilise la PK de la session passée par la vue. #}
+        <a href="{% url 'gestion_formations:session_detail' pk=session_pk %}" class="btn btn-secondary">Annuler</a>
+      {% endif %}
     </form>
   </div>
 {% endblock %}

@@ -35,6 +35,10 @@ ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = 'gestion_users.CustomUser'
 
 
+# Votre vue de connexion est nommée 'login' dans l'application 'gestion_users'.
+LOGIN_URL = 'gestion_users:login'
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,11 +48,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'gestion_users',# gestion des utilisateurs
-    'gestion_formations',# gestion des formations
-    'gestion_inscriptions',# gestion des inscriptions
-    'gestion_notes',# gestion des notes
-    'widget_tweaks',# pour les widgets de formulaire
+    'gestion_users',  # gestion des utilisateurs
+    'gestion_formations',  # gestion des formations
+    'gestion_inscriptions',  # gestion des inscriptions
+    'gestion_notes',  # gestion des notes
+    'widget_tweaks',  # pour les widgets de formulaire
 ]
 
 MIDDLEWARE = [
@@ -66,7 +70,8 @@ ROOT_URLCONF = 'gestion_pedagogique.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],  # Répertoire des templates
+        # Répertoire des templates
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -134,7 +139,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
 # configuration de statics
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -146,8 +150,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-
-
 # --- Configuration Email pour GMAIL (Production) ---
 
 # À utiliser en production. N'oubliez pas d'utiliser des variables d'environnement pour les identifiants !
@@ -155,18 +157,21 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'       # L'hôte SMTP de Gmail
 EMAIL_PORT = 587                         # Le port standard pour TLS
 EMAIL_USE_TLS = True                     # Utiliser TLS
-EMAIL_USE_SSL = False                    # Ne pas utiliser SSL si vous utilisez TLS sur le port 587
+# Ne pas utiliser SSL si vous utilisez TLS sur le port 587
+EMAIL_USE_SSL = False
 
 # Votre adresse email Gmail complète
-EMAIL_HOST_USER = 'smrjemaa@gmail.com' # <-- VOTRE adresse Gmail
+EMAIL_HOST_USER = 'smrjemaa@gmail.com'  # <-- VOTRE adresse Gmail
 
 # *** IMPORTANT : Ce n'est PAS votre mot de passe Gmail habituel ! ***
 # Vous devez générer un "Mot de passe d'application" Google.
-EMAIL_HOST_PASSWORD = '123.456.SamirYosra' # <-- À REMPLACER par le Mot de passe d'application
+# <-- À REMPLACER par le Mot de passe d'application
+EMAIL_HOST_PASSWORD = '123.456.SamirYosra'
 
 # L'adresse email qui apparaîtra dans le champ "De"
 # Elle doit correspondre à votre EMAIL_HOST_USER
-DEFAULT_FROM_EMAIL = 'jemaa samir <smrjemaa@gmail.com>' # <-- À REMPLACER (Nom optionnel)
+# <-- À REMPLACER (Nom optionnel)
+DEFAULT_FROM_EMAIL = 'jemaa samir <smrjemaa@gmail.com>'
 
 # Adresse email pour les notifications d'erreur du serveur
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
@@ -181,4 +186,3 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Activez CELA en développement, DESACTIVEZ la configuration PRODUCTION ci-dessus
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # --- Fin Configuration Email (pour le DÉVELOPPEMENT) ---
-

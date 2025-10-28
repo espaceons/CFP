@@ -76,9 +76,35 @@ class FormationForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
             'objectifs': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
             'prerequis': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'date_debut_formation': forms.DateInput(
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date'  # Utilisez le sélecteur de date natif HTML5
+                }
+            ),
+            'date_fin_formation': forms.DateInput(
+                attrs={
+                    'class': 'form-control',
+                    'type': 'date'
+                }
+            ),
             'duree_heures': forms.NumberInput(attrs={'class': 'form-control'}),
             'est_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+        def clean(self):
+            cleaned_data = super().clean()
+            date_debut = cleaned_data.get('date_debut_formation')
+            date_fin = cleaned_data.get('date_fin_formation')
+
+            # Vérifier si les deux dates existent avant de les comparer
+            if date_debut and date_fin:
+                if date_fin < date_debut:
+                    raise ValidationError(
+                        _("La date de fin de la formation ne peut pas être antérieure à la date de début."),
+                        code='invalid_date_range'
+                    )
+            return cleaned_data
 
 
 # --- Formulaire pour Séance ---

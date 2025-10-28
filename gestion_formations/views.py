@@ -356,6 +356,7 @@ class SeanceCreateView(PermissionRequiredMixin, LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         """Ajout d'informations contextuelles (session et titre)."""
         context = super().get_context_data(**kwargs)
+        context['session_pk'] = self.kwargs['session_pk']
         session = get_object_or_404(Session, pk=self.kwargs['session_pk'])
         context.update({
             'session': session,
